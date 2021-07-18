@@ -1,0 +1,19 @@
+{
+    "type": "postgres",
+    "host": "localhost",
+    "port": 5432,
+    "username": "postgres",
+    "password": "1234",
+    "database": "estate-agency",
+    "synchronize": true,
+    "logging": false,
+    "entities": [
+       "src/entities/*.js"
+    ],
+    "migrations": [
+       "src/migrations/*.js"
+    ],
+    "subscribers": [
+       "src/subscribers/*.js"
+    ]
+ }
