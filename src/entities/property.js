@@ -18,6 +18,10 @@ export class Property{
     @Column('int')
     size;
 
+    @Column('text')
+    location;
+
     @ManyToOne(() => User, user => user.properties)
     owner
+
 }
