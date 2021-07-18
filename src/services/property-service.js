@@ -1,9 +1,9 @@
-import {getManager, EntityNotFoundError} from "typeorm";
+import {EntityNotFoundError} from "typeorm";
 
-export class PropertyService{
+export default class PropertyService{
     repo;
 
-    constructor(repo){
+    constructor(){
         this.repo = repo;
     }
 
@@ -19,5 +19,23 @@ export class PropertyService{
         return await this.repo.createQueryBuilder('property')
             .where(`property.price BETWEEN '${from}' AND '${to}'`)
             .getMany();
+    }
+
+    findByName = (name) => {
+        return await this.repo.findOne({ name });
+    }
+
+    create = (propertyInput) => {
+        return await this.repo.create(propertyInput)
+    }
+
+    update = (propertyInput) => {
+        const result = await connection.getRepository(User).update(propertyInput.id, propertyInput);
+        
+        if(!result.affected){
+            throw new EntityNotFoundError(`Entity with id ${property.id} is not found`);
+        }
+
+        return await this.repo.update(propertyInput.id, propertyInput)
     }
 }
