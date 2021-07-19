@@ -7,10 +7,11 @@ import express from 'express';
 import multer from 'multer';
 import propertyRouter from './routes/property-routes.js'
 import PropertyService from "./services/property-service.js";
-import {PropertyRepository} from "./repositories/property-repository.js";
+import { PropertyRepository } from "./repositories/property-repository.js";
 import UserRepository from "./repositories/user-repository.js";
 import UserService from "./services/user-service.js";
 import cors from 'cors';
+import { authMiddleware } from './utils/jwt-strategy.js'
 
 const main = async() => {
     const app = express();
@@ -19,7 +20,7 @@ const main = async() => {
     const propertyService = new PropertyService(connection.getCustomRepository(PropertyRepository))
     const userService = new UserService(connection.getCustomRepository(UserRepository))
 
-    multer({ dest: 'src/pubilc' })
+    multer({ dest: 'src/public' })
     app.use(express.static('src/public'));
 
     app.use(cors({
@@ -28,6 +29,8 @@ const main = async() => {
 
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
+
+    authMiddleware(app);
     
     app.use('/properties', (req, res, next) => {
         req.propertyService = propertyService;

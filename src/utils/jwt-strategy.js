@@ -19,6 +19,16 @@ const strategy = new Strategy(opts, (payload, done) => {
     });
 })
 passport.use(strategy);
-export const verifyUser = passport.authenticate(strategy, { session: false }, (error, user, info, status) => {
-    throw new UnauthorizedException(info.message);
-})
+
+
+export const authMiddleware = (app) => {
+    app.use('**/auth', (req, res, next) => {
+        passport.authenticate(strategy, { session: false }, (error, user, info, status) => {
+            if(info){
+                return res.status(info.status).send(info.message)
+            }
+            req.user = user;
+            return next();
+        })(req, res, next)
+    })
+}
