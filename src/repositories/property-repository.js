@@ -3,7 +3,7 @@ import { Property } from "../entities/property.js";
 
 @EntityRepository(Property)
 export class PropertyRepository extends Repository{
-    findById(){
+    findById(id){
         return this.findOneOrFail({ id })
     }
 
@@ -21,15 +21,16 @@ export class PropertyRepository extends Repository{
             .getMany();
     }
 
-    create(propertyInput){
-        return this.save(propertyInput)
+    createProperty(propertyInput){
+        const property = this.create(propertyInput)
+        return this.save(property)
     }
 
-    update(propertyInput){
+    updateProperty(propertyInput){
         return this.update(propertyInput.id, propertyInput);
     }
 
-    delete(id){
+    deleteProperty(id){
         return this.delete(id);
     }
 }

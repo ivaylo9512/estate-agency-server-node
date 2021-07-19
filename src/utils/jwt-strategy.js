@@ -1,5 +1,6 @@
 import { ExtractJwt, Strategy} from 'passport-jwt'
 import passport from 'passport'
+import UnauthorizedException from '../exceptions/unauthorized-exception'
 
 export const jwtSecret = process.env.JWT_SECRET
 if(typeof jwtSecret === 'undefined'){
@@ -18,4 +19,6 @@ const strategy = new Strategy(opts, (payload, done) => {
     });
 })
 passport.use(strategy);
-export const verifyUser = passport.authenticate(strategy, { session: false })
+export const verifyUser = passport.authenticate(strategy, { session: false }, (error, user, info, status) => {
+    throw new UnauthorizedException(info.message);
+})

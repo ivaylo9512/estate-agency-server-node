@@ -22,13 +22,13 @@ export default class PropertyService{
     }
 
     async create(propertyInput, loggedUser) {
-        propertyInput.owner = loggedUser;
+        propertyInput.owner = loggedUser.id;
 
-        return await this.repo.save(propertyInput);
+        return await this.repo.createProperty(propertyInput);
     }
 
     async update(propertyInput) {
-        const result = this.repo.update(propertyInput.id, propertyInput);
+        const result = this.repo.updateProperty(propertyInput.id, propertyInput);
         
         if(!result.affected){
             throw new EntityNotFoundError(`Entity with id ${property.id} is not found`);
@@ -44,6 +44,6 @@ export default class PropertyService{
             throw new UnauthorizedException('Unauthorized.')
         }
 
-        return await this.repo.delete(id);
+        return await this.repo.deleteProperty(id);
     }
 }

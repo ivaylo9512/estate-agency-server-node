@@ -10,7 +10,7 @@ export default class UserService{
     }
 
     async create(userInput){
-        return await this.repo.save(userInput);
+        return await this.repo.createUser(userInput);
     }
 
     async update(userInput, loggedUser){
@@ -18,7 +18,7 @@ export default class UserService{
             throw new UnauthorizedException('Unauthorized.');
         }
 
-        return await this.repo.update(userInput);
+        return await this.repo.updateUser(userInput);
     }
 
     async delete(id, loggedUser){
@@ -26,6 +26,6 @@ export default class UserService{
             throw new UnauthorizedException('Unauthorized.');
         }
 
-        return await this.repo.delete(id)
+        return await this.repo.saveUser(id)
     }
 }

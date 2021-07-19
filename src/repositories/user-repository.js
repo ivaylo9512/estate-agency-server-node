@@ -8,15 +8,15 @@ export default class UserRepository extends Repository{
     }
 
     update(userInput){
-        return this.update(userInput.id, userInput);
+        return this.updateUser(userInput.id, userInput);
     }
-    
+
     create(userInput){
-        return this.save(userInput);
+        return this.saveUser(userInput);
     }
 
     delete(id){
-        return this.delete(id);
+        return this.deleteUser(id);
     }
 
 }
