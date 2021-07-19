@@ -5,21 +5,33 @@ import { createConnection } from "typeorm";
 import ormConfig from './type-orm.js'
 import express from 'express';
 import multer from 'multer';
-import propertyRouter from './routes/property-routes'
+import propertyRouter from './routes/property-routes.js'
 import PropertyService from "./services/property-service.js";
 import {PropertyRepository} from "./repositories/property-repository.js";
+import UserRepository from "./repositories/user-repository.js";
+import UserService from "./services/user-service.js";
+import cors from 'cors';
 
 const main = async() => {
     const app = express();
 
     const connection = await createConnection(ormConfig);
     const propertyService = new PropertyService(connection.getCustomRepository(PropertyRepository))
+    const userService = new UserService(connection.getCustomRepository(UserRepository))
 
     multer({ dest: 'src/pubilc' })
     app.use(express.static('src/public'));
 
+    app.use(cors({
+        origin: 'http://localhost:3001'
+    }))
+
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
+    
     app.use('/properties', (req, res, next) => {
-        req.service = propertyService;
+        req.propertyService = propertyService;
+        req.userService = userService;
         next();
     }, propertyRouter)
 
