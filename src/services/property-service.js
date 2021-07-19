@@ -1,41 +1,36 @@
-import {EntityNotFoundError} from "typeorm";
+import { EntityNotFoundError } from "typeorm";
 
 export default class PropertyService{
-    repo;
-
-    constructor(){
+    constructor(repo){
         this.repo = repo;
     }
 
-    findById = (id, loggedUser) => {
-        await this.repo.findOne(1);
+    async findById(id, loggedUser) {
+        await this.repo.findOne(id);
     }
 
-    findByLocation = (location) => {
-        await this.repo.find({ location });
+    async findByLocation(location) {
+        await this.repo.find(location);
+    }
+    async findByPriceRange(from, to) {
+        return await this.repo.findByPriceRange(from, to);
     }
 
-    findByPriceRange= (from, to) => {
-        return await this.repo.createQueryBuilder('property')
-            .where(`property.price BETWEEN '${from}' AND '${to}'`)
-            .getMany();
+    async findByName(name) {
+        return await this.repo.findOne(name);
     }
 
-    findByName = (name) => {
-        return await this.repo.findOne({ name });
+    async create(propertyInput) {
+        return await this.repo.create(propertyInput);
     }
 
-    create = (propertyInput) => {
-        return await this.repo.create(propertyInput)
-    }
-
-    update = (propertyInput) => {
-        const result = await connection.getRepository(User).update(propertyInput.id, propertyInput);
+    async update(propertyInput) {
+        const result = this.repo.update(propertyInput.id, propertyInput);
         
         if(!result.affected){
             throw new EntityNotFoundError(`Entity with id ${property.id} is not found`);
         }
 
-        return await this.repo.update(propertyInput.id, propertyInput)
+        return propertyInput;
     }
 }

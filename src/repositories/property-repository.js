@@ -6,12 +6,15 @@ export class PropertyRepository extends Repository{
     findByLocation(location){
         return this.find({ location });
     }
+    
     findById(){
         return this.findOne({ id })
     }
+
     findByName(name) {
         return this.findOne({ name });
     }
+
     findByPriceRange(from, to){
         return this.createQueryBuilder('property')
             .where(`property.price BETWEEN '${from}' AND '${to}'`)
