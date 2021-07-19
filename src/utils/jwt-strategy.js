@@ -1,8 +1,7 @@
 import { ExtractJwt, Strategy} from 'passport-jwt'
-import { use, authenticate } from 'passport'
+import passport from 'passport'
 
 export const jwtSecret = process.env.JWT_SECRET
-
 if(typeof jwtSecret === 'undefined'){
     throw new Error('Jwt secret is missing.')
 }
@@ -18,6 +17,5 @@ const strategy = new Strategy(opts, (payload, done) => {
         role: payload.role
     });
 })
-
-use(strategy);
-export const verifyUser = authenticate(strategy, { session: false })
+passport.use(strategy);
+export const verifyUser = passport.authenticate(strategy, { session: false })
