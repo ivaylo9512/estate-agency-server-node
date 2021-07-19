@@ -18,6 +18,10 @@ const main = async() => {
     multer({ dest: 'src/pubilc' })
     app.use(express.static('src/public'));
 
+    app.use('/properties', (req, res, next) => {
+        req.service = propertyService;
+        next();
+    }, propertyRouter)
 
     const port = process.env.PORT || 8098;
     app.listen(port, () => {
