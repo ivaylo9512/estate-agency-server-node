@@ -3,23 +3,32 @@ import { verifyUser } from '../utils/jwt-strategy';
 
 const router = Router();
 
-router.get('/findById/:id', verifyUser, (req, res) => {
-    res.send(req.service.findFyId(req.params.id));
+router.get('/findById/:id', (req, res) => {
+    res.send(req.propertyService.findFyId(req.params.id));
 });
-router.get('/findByName/:name', verifyUser, (req, res) => {
-    res.send(req.service.findByName(req.params.name))
+router.get('/findByName/:name', (req, res) => {
+    res.send(req.propertyService.findByName(req.params.name))
 });
-router.get('/findByPriceRange', verifyUser, (req, res) => {
-    res.send(req.service.delete(req.body.from, req.body.to))
+router.get('/findByPriceRange', (req, res) => {
+    res.send(req.propertyService.delete(req.body.from, req.body.to))
 });
-router.get('/findByLocation/:location', verifyUser, (req, res) => {
-    res.send(req.service.findByLocation(req.params.location))
+router.get('/findByLocation/:location', (req, res) => {
+    res.send(req.propertyService.findByLocation(req.params.location))
 });
+router.post('/create', verifyUser, (req, res) => {
+    const user = req.userService.findFyId(req.user.id);
+
+    res.send(req.propertyService.create(req.body, user));
+})
 router.delete('/delete/:id', verifyUser, (req, res) => {
-    res.send(req.service.delete(req.params.id))
+    const user = req.userService.findFyId(req.user.id);
+    
+    res.send(req.propertyService.delete(req.params.id, user))
 });
 router.patch('/update', verifyUser, (req, res) => {
-    res.send(req.service.update(req.body))
+    const user = req.userService.findFyId(req.user.id);
+
+    res.send(req.propertyService.update(req.body, user))
 });
 
 export default router
