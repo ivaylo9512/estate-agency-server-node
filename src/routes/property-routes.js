@@ -4,7 +4,7 @@ import { verifyUser } from '../utils/jwt-strategy';
 const router = Router();
 
 router.get('/findById/:id', (req, res) => {
-    res.send(req.propertyService.findFyId(req.params.id));
+    res.send(req.propertyService.findById(req.params.id));
 });
 router.get('/findByName/:name', (req, res) => {
     res.send(req.propertyService.findByName(req.params.name))

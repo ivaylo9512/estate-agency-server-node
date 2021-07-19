@@ -3,15 +3,15 @@ import { Property } from "../entities/property.js";
 
 @EntityRepository(Property)
 export class PropertyRepository extends Repository{
+    findById(){
+        return this.findOneOrFail({ id })
+    }
+
     findByLocation(location){
         return this.find({ location });
     }
-    
-    findById(){
-        return this.findOne({ id })
-    }
 
-    findByName(name) {
+    findByName(name){
         return this.findOne({ name });
     }
 
@@ -22,10 +22,14 @@ export class PropertyRepository extends Repository{
     }
 
     create(propertyInput){
-        return this.create(propertyInput)
+        return this.save(propertyInput)
     }
 
-    update = (propertyInput) => {
+    update(propertyInput){
         return this.update(propertyInput.id, propertyInput);
+    }
+
+    delete(id){
+        return this.delete(id);
     }
 }
