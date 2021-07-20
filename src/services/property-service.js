@@ -1,4 +1,4 @@
-import { EntityNotFoundError } from "typeorm";
+import { EntitiyNotFoundException } from "typeorm";
 import UnauthorizedException from "../exceptions/unauthorized-exception.js";
 
 export default class PropertyService{
@@ -22,16 +22,33 @@ export default class PropertyService{
     }
 
     async create(propertyInput, loggedUser) {
-        propertyInput.owner = loggedUser.id;
+        const { name, description, price, location } = propertyInput;
 
-        return await this.repo.createProperty(propertyInput);
+        const property = {
+            name,
+            description,
+            price,
+            location,
+            owner: loggedUser.id
+        }
+
+        return await this.repo.createProperty(property);
     }
 
     async update(propertyInput) {
-        const result = this.repo.updateProperty(propertyInput.id, propertyInput);
+        const { id, name, description, price, location } = propertyInput;
         
+        const property = {
+            id,
+            name,
+            description,
+            price,
+            location,
+        }
+
+        const result = this.repo.updateProperty(propertyInput.id, propertyInput);
         if(!result.affected){
-            throw new EntityNotFoundError(`Entity with id ${property.id} is not found`);
+            throw new EntitiyNotFoundException(`Property with id ${property.id} is not found`);
         }
 
         return propertyInput;
