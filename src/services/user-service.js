@@ -1,4 +1,5 @@
 import UnauthorizedException from "../exceptions/unauthorized-exception.js";
+import EntitiyNotFoundException from "../exceptions/enitity-not-found-exception.js";
 
 export default class UserService{
     constructor(repo){
@@ -10,7 +11,15 @@ export default class UserService{
     }
 
     async create(userInput){
-        return await this.repo.createUser(userInput);
+        const user = {
+            username: userInput.username,
+            password: userInput.password,
+            name: userInput.name,
+            username: userInput.username,
+            description: userInput.description,
+            location: userInput.location,
+        }
+        return await this.repo.createUser(user);
     }
 
     async update(userInput, loggedUser){
@@ -18,6 +27,20 @@ export default class UserService{
             throw new UnauthorizedException('Unauthorized.');
         }
 
+        const user = {
+            username: userInput.username,
+            password: userInput.password,
+            name: userInput.name,
+            username: userInput.username,
+            description: userInput.description,
+            location: userInput.location,
+        }
+
+        const result = await this.repo.updateUser(user);
+        if(!result.affected){
+            throw new EntitiyNotFoundException(`User with id: ${userInput.id} is not found.`)
+        }
+        
         return await this.repo.updateUser(userInput);
     }
 
