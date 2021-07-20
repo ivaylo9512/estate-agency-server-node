@@ -51,4 +51,33 @@ export default class UserService{
 
         return await this.repo.saveUser(id)
     }
+
+    async getUserFromToken(token, secret){
+        const payload = verify(token, secret);
+        
+        const user = await this.em.findOne(User, { id: payload.id }, ['refreshTokens'])
+        if(!user){
+            throw new UnauthorizedException('Unauthorized.');
+        }
+
+        const foundToken = !user.refreshTokens.getItems().find(rt => rt.token == token);
+        if(!foundToken){
+            throw new UnauthorizedException('Unauthorized.');
+        }
+
+        return user;
+    }
+
+    addToken(user, token, expiryDays){
+        const date = new Date();
+        date.setDate(date.getDate() + expiryDays);
+
+        const refreshToken = this.em.create(RefreshToken, { 
+            token, 
+            expiresAt: date
+        })
+        user.refreshTokens.add(refreshToken);
+
+        this.em.flush()
+    }
 }

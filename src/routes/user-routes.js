@@ -1,4 +1,9 @@
 import { Router, Response, ErrorRequestHandler  } from "express";
+import { UserRequest } from "src/types";
+import { getToken, getRefreshToken, COOKIE_OPTIONS, refreshExpiry } from '../authentication/authenticate'
+import User from "../entities/user";
+import { refreshSecret } from "../authentication/authenticate";
+import { JwtUser } from "../authentication/jwt-user";
 import UnauthorizedException from "../expceptions/unauthorized";
 import { verifyUser } from "../authentication/jwt-strategy";
 
@@ -52,5 +57,30 @@ router.post('/register', async(req, res) => {
 
     res.send(userResponse);
 })
+
+
+router.get('/refreshToken', async(req, res) => {
+    const { signedCookies: { refreshToken } } = req
+    
+    const user = await req.service.getUserFromToken(refreshToken, refreshSecret);
+
+    const token = getToken(user);
+
+    res.header('Access-Control-Expose-Headers', 'Authorization'); 
+    res.header('Authorization', token);
+    
+    res.send();
+})
+
+const setTokens = async (res, user, req) => {
+    const token = getToken(new JwtUser(user))
+    const refreshToken = getRefreshToken(new JwtUser(user));
+
+    req.service?.addToken(user, refreshToken, refreshExpiry / 60 / 60 / 24)
+
+    res.cookie("refreshToken", refreshToken, COOKIE_OPTIONS);
+    res.header('Access-Control-Expose-Headers', 'Authorization'); 
+    res.header('Authorization', token);
+}
 
 export default router;
