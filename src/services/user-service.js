@@ -11,6 +11,18 @@ export default class UserService{
         return await this.repo.findById(id);
     }
 
+    async login(userInput) {
+        let { username, password, email } = userInput; 
+        let user = await this.repo.findUserWithSelections(username ? 
+            { username } : { email }, ['user', 'user.password'])
+
+        if(!user || !await argon2.verify(user.password, password)){
+            throw new UnauthorizedException('Incorrect username, pasword or email.')
+        }
+
+        return user;
+    }
+
     async register(userInput){
         let { username, password, name, description, location } =  userInput;
 
@@ -56,7 +68,7 @@ export default class UserService{
             throw new UnauthorizedException('Unauthorized.');
         }
 
-        return await this.repo.saveUser(id)
+        return await this.repo.deleteById(id)
     }
 
     async getUserFromToken(token, secret){
@@ -79,11 +91,9 @@ export default class UserService{
         const date = new Date();
         date.setDate(date.getDate() + expiryDays);
 
-        token.expiresAt(date);
-        token.owner = user;
-
+        token.expiresAt = date;
         user.refreshTokens = [token];
 
-        await this.repo.save(user);
+        return await this.repo.save(user);
     }
 }
