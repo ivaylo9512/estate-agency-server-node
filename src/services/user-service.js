@@ -13,7 +13,7 @@ export default class UserService{
 
     async login(userInput) {
         let { username, password, email } = userInput; 
-        let user = await this.repo.findUserWithSelections({ username, email }, 
+        let user = await this.repo.findUserOrClause({ username, email }, 
             ['user', 'user.password'])
 
         if(!user || !await argon2.verify(user.password, password)){

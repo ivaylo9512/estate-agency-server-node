@@ -35,7 +35,7 @@ router.delete('/auth/delete/:id', async(req, res) => {
 })
 
 router.patch('/auth/update', async(req, res) => {
-    const user = await req.userService.findFyId(req.user.id);
+    const user = await req.userService.findById(req.user.id);
 
     res.send(new PropertyDto(await req.propertyService.update(req.body, user)));
 })
