@@ -1,8 +1,8 @@
 import "reflect-metadata";
 import "./utils/load-env.js"
 import "@babel/polyfill";
-import { createConnection } from "typeorm";
-import ormConfig from './type-orm.js'
+import { createConnection, EntityNotFoundError } from "typeorm";
+import ormConfig from './utils/type-orm.js'
 import express from 'express';
 import multer from 'multer';
 import propertyRouter from './routes/property-routes.js'
@@ -11,9 +11,9 @@ import { PropertyRepository } from "./repositories/property-repository.js";
 import UserRepository from "./repositories/user-repository.js";
 import UserService from "./services/user-service.js";
 import cors from 'cors';
-import { authMiddleware } from './utils/jwt-strategy.js'
+import { authMiddleware } from './authentication/authenticate.js'
 
-const main = async() => {
+export const initialize = async() => {
     const app = express();
 
     const connection = await createConnection(ormConfig);
@@ -38,14 +38,12 @@ const main = async() => {
         next();
     }, propertyRouter)
 
-    const port = process.env.PORT || 8098;
-    app.listen(port, () => {
-        console.log(`\n🚀!! server started on http://localhost:${port} !!`)
+    app.use((err, req, res, next) => {
+        if(err instanceof EntityNotFoundError){
+            err.status = 404;
+        }
+        res.status(err.status || 500).send(err.message);
     })
 
-
-
+    return app
 }
-main().catch(err => {
-    console.log(err);
-})
