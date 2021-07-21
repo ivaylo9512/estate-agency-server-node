@@ -1,10 +1,11 @@
 export class UserDto{
     constructor(user){
-        const {id, name, username, location} = user;
+        const {id, name, username, location, description} = user;
 
         this.id = id;
         this.name = name;
         this.username = username;
         this.location = location;
+        this.description = description;
     }
 }
