@@ -24,7 +24,7 @@ export const initialize = async() => {
 
     const propertyService = new PropertyService(connection.getCustomRepository(PropertyRepository))
     const userService = new UserService(connection.getCustomRepository(UserRepository))
-    
+
     multer({ dest: 'src/public' })
     app.use(express.static('src/public'));
 

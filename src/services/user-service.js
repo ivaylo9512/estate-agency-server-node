@@ -13,8 +13,8 @@ export default class UserService{
 
     async login(userInput) {
         let { username, password, email } = userInput; 
-        let user = await this.repo.findUserWithSelections(username ? 
-            { username } : { email }, ['user', 'user.password'])
+        let user = await this.repo.findUserWithSelections({ username, email }, 
+            ['user', 'user.password'])
 
         if(!user || !await argon2.verify(user.password, password)){
             throw new UnauthorizedException('Incorrect username, pasword or email.')
@@ -24,7 +24,7 @@ export default class UserService{
     }
 
     async register(userInput){
-        let { username, password, name, description, location } =  userInput;
+        let { username, password, name, description, location, email } =  userInput;
 
         password = await argon2.hash(password);
 
@@ -33,7 +33,8 @@ export default class UserService{
             password,
             name,
             description,
-            location
+            location,
+            email
         }
 
         return await this.repo.createUser(user);
@@ -44,7 +45,7 @@ export default class UserService{
             throw new UnauthorizedException('Unauthorized.');
         }
 
-        const { id, username, name, description, location } =  userInput;
+        const { id, username, name, description, location, email } =  userInput;
 
         const user = {
             id,
@@ -53,6 +54,7 @@ export default class UserService{
             username,
             description,
             location,
+            email
         }
 
         const result = await this.repo.updateUser(user);

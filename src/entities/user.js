@@ -17,6 +17,9 @@ export class User {
     password;
 
     @Column('text')
+    email;
+
+    @Column('text')
     location;
     
     @Column('text')
