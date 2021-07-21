@@ -1,6 +1,5 @@
 import { ExtractJwt, Strategy} from 'passport-jwt'
 import passport from 'passport'
-import UnauthorizedException from '../exceptions/unauthorized-exception'
 
 export const jwtSecret = process.env.JWT_SECRET
 if(typeof jwtSecret === 'undefined'){

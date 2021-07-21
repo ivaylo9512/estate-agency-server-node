@@ -6,7 +6,7 @@
         "port": 5432,
         "username": "postgres",
         "password": "1234",
-        "database": "estate-agency-test",
+        "database": "estate-agency",
         "logging": true,
         "entities": [
             "dist/entities/*.js"
@@ -30,13 +30,13 @@
         "dropSchema": true,
         "synchronize": true,
         "entities": [
-            "src/entities/*.js"
+            "dist/entities/*.js"
         ],
         "migrations": [
-            "src/migrations/*.js"
+            "dist/migrations/*.js"
         ],
         "subscribers": [
-            "src/subscribers/*.js"
+            "dist/subscribers/*.js"
         ]
     }
 ]
