@@ -1,19 +1,42 @@
-{
-    "type": "postgres",
-    "host": "localhost",
-    "port": 5432,
-    "username": "postgres",
-    "password": "1234",
-    "database": "estate-agency",
-    "synchronize": true,
-    "logging": false,
-    "entities": [
-       "src/entities/*.js"
-    ],
-    "migrations": [
-       "src/migrations/*.js"
-    ],
-    "subscribers": [
-       "src/subscribers/*.js"
-    ]
- }
+[
+    {
+        "name": "dev",
+        "type": "postgres",
+        "host": "localhost",
+        "port": 5432,
+        "username": "postgres",
+        "password": "1234",
+        "database": "estate-agency-test",
+        "logging": true,
+        "entities": [
+            "dist/entities/*.js"
+        ],
+        "migrations": [
+            "dist/migrations/*.js"
+        ],
+        "subscribers": [
+            "dist/subscribers/*.js"
+        ]
+    },
+    {
+        "name": "test",
+        "type": "postgres",
+        "host": "localhost",
+        "port": 5432,
+        "username": "postgres",
+        "password": "1234",
+        "database": "estate-agency-test",
+        "logging": false,
+        "dropSchema": true,
+        "synchronize": true,
+        "entities": [
+            "src/entities/*.js"
+        ],
+        "migrations": [
+            "src/migrations/*.js"
+        ],
+        "subscribers": [
+            "src/subscribers/*.js"
+        ]
+    }
+]
