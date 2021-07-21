@@ -3,7 +3,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm'
 
 @Entity()
 export class Property{
-    @PrimaryGeneratedColumn('int')
+    @PrimaryGeneratedColumn()
     id;
     
     @Column('text')
@@ -21,7 +21,9 @@ export class Property{
     @Column('text')
     location;
 
-    @ManyToOne(() => User, user => user.properties)
-    owner
+    @ManyToOne(() => User, user => user.properties,{ 
+        eager: true
+    })
+    owner;
 
 }

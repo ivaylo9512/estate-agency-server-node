@@ -1,4 +1,4 @@
-import { User } from "./entities/user.js";
+import { User } from "../entities/user.js";
 
 export default {
     type: "postgres",

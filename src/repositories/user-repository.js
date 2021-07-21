@@ -7,16 +7,17 @@ export default class UserRepository extends Repository{
         return this.findOneOrFail({ id });
     }
 
-    update(userInput){
-        return this.updateUser(userInput.id, userInput);
+    updateUser(userInput){
+        return this.update(userInput.id, userInput);
     }
 
-    create(userInput){
-        return this.saveUser(userInput);
+    createUser(userInput){
+        const user = this.create(userInput)
+        return this.save(userInput);
     }
 
-    delete(id){
-        return this.deleteUser(id);
+    deleteUser(id){
+        return this.delete(id);
     }
 
 }

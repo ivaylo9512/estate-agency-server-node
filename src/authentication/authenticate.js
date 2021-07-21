@@ -25,8 +25,9 @@ export const authMiddleware = (app) => {
     app.use('**/auth', (req, res, next) => {
         passport.authenticate(strategy, { session: false }, (error, user, info, status) => {
             if(info){
-                return res.status(info.status).send(info.message)
+                return res.status(401).send(info.message)
             }
+            
             req.user = user;
             return next();
         })(req, res, next)

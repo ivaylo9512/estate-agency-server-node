@@ -5,7 +5,7 @@ import User from "../entities/user";
 import { refreshSecret } from "../authentication/authenticate";
 import { JwtUser } from "../authentication/jwt-user";
 import UnauthorizedException from "../expceptions/unauthorized";
-import { verifyUser } from "../authentication/jwt-strategy";
+import { verifyUser } from "../authentication/authenticate";
 
 const router = Router();
 
