@@ -1,5 +1,6 @@
 import UnauthorizedException from "../exceptions/unauthorized-exception.js";
 import EntitiyNotFoundException from "../exceptions/enitity-not-found-exception.js";
+import argon2 from 'argon2';
 
 export default class UserService{
     constructor(repo){
@@ -10,15 +11,19 @@ export default class UserService{
         return await this.repo.findById(id);
     }
 
-    async create(userInput){
+    async register(userInput){
+        let { username, password, name, description, location } =  userInput;
+
+        password = await argon2.hash(password);
+
         const user = {
-            username: userInput.username,
-            password: userInput.password,
-            name: userInput.name,
-            username: userInput.username,
-            description: userInput.description,
-            location: userInput.location,
+            username,
+            password,
+            name,
+            description,
+            location
         }
+
         return await this.repo.createUser(user);
     }
 
@@ -27,13 +32,15 @@ export default class UserService{
             throw new UnauthorizedException('Unauthorized.');
         }
 
+        const { id, username, name, description, location } =  userInput;
+
         const user = {
-            username: userInput.username,
-            password: userInput.password,
-            name: userInput.name,
-            username: userInput.username,
-            description: userInput.description,
-            location: userInput.location,
+            id,
+            username,
+            name,
+            username,
+            description,
+            location,
         }
 
         const result = await this.repo.updateUser(user);
@@ -41,7 +48,7 @@ export default class UserService{
             throw new EntitiyNotFoundException(`User with id: ${userInput.id} is not found.`)
         }
         
-        return await this.repo.updateUser(userInput);
+        return userInput;
     }
 
     async delete(id, loggedUser){
@@ -68,16 +75,15 @@ export default class UserService{
         return user;
     }
 
-    addToken(user, token, expiryDays){
+    async addToken(user, token, expiryDays){
         const date = new Date();
         date.setDate(date.getDate() + expiryDays);
 
-        const refreshToken = this.em.create(RefreshToken, { 
-            token, 
-            expiresAt: date
-        })
-        user.refreshTokens.add(refreshToken);
+        token.expiresAt(date);
+        token.owner = user;
 
-        this.em.flush()
+        user.refreshTokens = [token];
+
+        await this.repo.save(user);
     }
 }
