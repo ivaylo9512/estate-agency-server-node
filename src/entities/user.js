@@ -1,29 +1,38 @@
-import { Entity, PrimaryGeneratedColumn, OneToMany, Column } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, OneToMany, CreateDateColumn, UpdateDateColumn, Column } from "typeorm";
 import { Property } from "./property.js";
+import { RefreshToken } from "./refresh-token.js";
 
 @Entity()
 export class User {
-    @PrimaryGeneratedColumn('int')
+    @PrimaryGeneratedColumn()
     id;
-
-    @Column('test')
-    username
-
-    @Column('text')
-    location;
 
     @Column('text')
     name;
 
     @Column('text')
+    username;
+
+    @Column('text', { select: false })
     password;
 
-    @Column('description')
-    password;
-
-    @OneToMany(() => RefreshToken, rt => rt.token)
-    refreshTokens;
+    @Column('text')
+    location;
     
+    @Column('text')
+    description;
+
     @OneToMany(() => Property, property => property.owner)
     properties;
+
+    @OneToMany(() => RefreshToken, refreshToken => refreshToken.owner, {
+        eager: true
+    })
+    refreshTokens
+
+    @CreateDateColumn({ type: 'timestamp' })
+    createdAt;
+    
+    @UpdateDateColumn({ type: 'timestamp' })
+    updatedAt;
 }

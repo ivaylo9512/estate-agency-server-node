@@ -1,5 +1,5 @@
 import { User } from "./user.js";
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm'
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, UpdateDateColumn, CreateDateColumn } from 'typeorm'
 
 @Entity()
 export class Property{
@@ -14,16 +14,21 @@ export class Property{
 
     @Column('text')
     description;
-
+    
     @Column('int')
     size;
 
     @Column('text')
     location;
 
-    @ManyToOne(() => User, user => user.properties,{ 
+    @ManyToOne(() => User, user => user.properties, {
         eager: true
     })
     owner;
 
+    @CreateDateColumn({ type: 'timestamp' })
+    createdAt;
+    
+    @UpdateDateColumn({ type: 'timestamp' })
+    updatedAt;
 }

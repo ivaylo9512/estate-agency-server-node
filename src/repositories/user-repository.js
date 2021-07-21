@@ -13,10 +13,12 @@ export default class UserRepository extends Repository{
 
     createUser(userInput){
         const user = this.create(userInput)
-        return this.save(userInput);
+        return this.save(user);
     }
-
-    deleteUser(id){
+    deleteByUser(user){
+        return this.remove(user);
+    }
+    deleteById(id){
         return this.delete(id);
     }
 

@@ -1,4 +1,4 @@
-import {EntityRepository, Repository} from "typeorm";
+import { EntityRepository, Repository } from "typeorm";
 import { Property } from "../entities/property.js";
 
 @EntityRepository(Property)
@@ -22,7 +22,7 @@ export class PropertyRepository extends Repository{
     }
 
     createProperty(propertyInput){
-        const property = this.create(propertyInput)
+        const property = this.create(propertyInput);
         return this.save(property)
     }
 
@@ -30,7 +30,11 @@ export class PropertyRepository extends Repository{
         return this.update(propertyInput.id, propertyInput);
     }
 
-    deleteProperty(id){
+    deleteByProperty(property){
+        return this.remove(property);
+    }
+
+    deleteById(id){
         return this.delete(id);
     }
 }

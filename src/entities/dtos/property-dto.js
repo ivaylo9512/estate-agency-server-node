@@ -10,6 +10,6 @@ export class PropertyDto{
         this.size = size;
         this.description = description;
         this.location = location;
-        this.location = new UserDto(owner);
+        this.owner = new UserDto(owner);
     }
 }
