@@ -1,5 +1,6 @@
 import request from 'supertest';
-import { app, token } from './sequential.test';
+import { app } from './sequential.test';
+import { firstToken, secondToken, adminToken } from './user-tests'
 
 const propertyTests = () => {
     return () => {
@@ -24,7 +25,7 @@ const propertyTests = () => {
             const res = await request(app)
                 .post('/properties/auth/create')
                 .set('Content-Type', 'Application/json')
-                .set('Authorization', token)
+                .set('Authorization', firstToken)
                 .send(createProperty)
                 .expect(200);
                 
@@ -48,12 +49,13 @@ const propertyTests = () => {
         it('should update property', async () => {
 
             const res = await request(app)
-                .post('/properties/auth/update')
+                .patch('/properties/auth/update')
                 .set('Content-Type', 'Application/json')
-                .set('Authorization', token)
+                .set('Authorization', firstToken)
                 .send(updateProperty)
                 .expect(200)
-                .expect(res.body).toEqual(updateProperty);
+
+                expect(res.body).toEqual(updateProperty);
         })
 
     }

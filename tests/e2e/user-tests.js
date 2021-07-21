@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { app, token } from './sequential.test';
+import { app } from './sequential.test';
 import { getToken } from '../../src/authentication/jwt';
 
 export const firstUser = {
@@ -7,21 +7,24 @@ export const firstUser = {
     password: 'testUserPassword', 
     name: 'testName', 
     description: 'test description', 
-    location: 'test location' 
+    location: 'test location',
+    email: 'testEmail@gmail.com'
 }
 export const secondUser = {
     username: 'testUser2', 
     password: 'testUserPassword2', 
     name: 'testName2', 
     description: 'test description2', 
-    location: 'test location2' 
+    location: 'test location2',
+    email: 'testEmail2@gmail.com'
 }
-export const adminToken = getToken({
+export const adminToken = 'Bearer ' + getToken({
     id: 3, 
     admin: 'admin'
 })
 export let firstToken;
 export let secondToken;
+
 const userTests = () => {
     return () => {
 
@@ -34,7 +37,7 @@ const userTests = () => {
                 .expect(200);
 
                 firstUser.id = res.body.id;
-                firstToken = res.get('Authorization');
+                firstToken = 'Bearer ' + res.get('Authorization');
                 delete firstUser.password 
 
                 expect(res.body.id).toBe(1);
@@ -51,7 +54,7 @@ const userTests = () => {
                 .expect(200);
 
                 secondUser.id = res.body.id;
-                secondToken = res.get('Authorization');
+                secondToken = 'Bearer ' + res.get('Authorization');
                 delete secondUser.password 
 
                 expect(res.body.id).toBe(2);
@@ -66,8 +69,9 @@ const userTests = () => {
                     username: secondUser.username,
                     password
                 })
-                .expect(200)
-                .expect(res.body).toEqual(secondUser)
+                .expect(200);
+
+                expect(res.body).toEqual(secondUser);
         })
     }
 } 
