@@ -21,15 +21,19 @@ export class User {
 
     @Column('text')
     location;
+
+    @Column('text', { default: 'user'})
+    role;
     
     @Column('text')
     description;
 
-    @OneToMany(() => Property, property => property.owner)
+    @OneToMany(() => Property, property => property.owner, { onDelete: 'CASCADE' })
     properties;
 
     @OneToMany(() => RefreshToken, refreshToken => refreshToken.owner, {
-        eager: true
+        eager: true,
+        onDelete: 'CASCADE' 
     })
     refreshTokens
 

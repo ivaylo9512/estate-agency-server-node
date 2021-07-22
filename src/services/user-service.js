@@ -1,6 +1,7 @@
 import UnauthorizedException from "../exceptions/unauthorized-exception.js";
 import EntitiyNotFoundException from "../exceptions/enitity-not-found-exception.js";
 import argon2 from 'argon2';
+import { verify } from 'jsonwebtoken';
 
 export default class UserService{
     constructor(repo){
@@ -35,7 +36,6 @@ export default class UserService{
         await Promise.all(users.map(async user => 
             user.password = await argon2.hash(user.password)));
 
-        console.log(users)
         return await this.repo.createUser(users)
     }
 
