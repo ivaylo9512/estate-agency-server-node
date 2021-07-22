@@ -23,6 +23,22 @@ export default class UserService{
         return user;
     }
 
+    async create(users, loggedUser) {
+        if(loggedUser.role != 'admin'){
+            throw new UnauthorizedException('Unauthorized.');
+        }
+
+        if(!Array.isArray(users)){
+            users = [users];
+        }
+
+        await Promise.all(users.map(async user => 
+            user.password = await argon2.hash(user.password)));
+
+        console.log(users)
+        return await this.repo.createUser(users)
+    }
+
     async register(userInput){
         let { username, password, name, description, location, email } =  userInput;
 
@@ -70,7 +86,12 @@ export default class UserService{
             throw new UnauthorizedException('Unauthorized.');
         }
 
-        return await this.repo.deleteById(id)
+        const result = await this.repo.deleteById(id);
+        if(!result.affected){
+            return false;
+        }
+        
+        return !!result.affected;
     }
 
     async getUserFromToken(token, secret){

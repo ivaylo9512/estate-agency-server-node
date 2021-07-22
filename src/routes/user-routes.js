@@ -11,12 +11,7 @@ const router = Router();
 
 
 router.get('/findById/:id', async(req, res) => {
-    const loggedUser = req.user;
-    if(!loggedUser){
-        throw new UnauthorizedException('Unauthorized.');
-    }
-
-    res.send(new UserDto(await req.userService.findById(Number(req.params.id), loggedUser)));
+    res.send(new UserDto(await req.userService.findById(Number(req.params.id))));
 })
 
 router.patch('/auth/update', async(req, res) => {
@@ -30,9 +25,6 @@ router.patch('/auth/update', async(req, res) => {
 
 router.delete('/auth/delete/:id', async(req, res) => {
     const loggedUser = req.user;
-    if(!loggedUser){
-        throw new UnauthorizedException('Unauthorized.');
-    }
 
     res.send(await req.userService.delete(Number(req.params.id), loggedUser));
 })
@@ -51,6 +43,12 @@ router.post('/register', async(req, res) => {
     res.send(new UserDto(user));
 })
 
+router.post('/auth/create', async(req, res) => {
+    const loggedUser = req.user;
+    const users = await req.userService.create(req.body, loggedUser);
+    
+    res.send(users.map(user => new UserDto(user)));
+})
 
 router.get('/refreshToken', async(req, res) => {
     const { signedCookies: { refreshToken } } = req

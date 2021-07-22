@@ -23,11 +23,12 @@ export default class UserRepository extends Repository{
     updateUser(userInput){
         return this.update(userInput.id, userInput);
     }
-
-    createUser(userInput){
-        const user = this.create(userInput)
-        return this.save(user);
+    
+    createUser(userInputs){
+        const users = this.create(userInputs);
+        return this.save(users);
     }
+    
     deleteByUser(user){
         return this.remove(user);
     }
