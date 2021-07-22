@@ -1,4 +1,4 @@
-import { EntitiyNotFoundException } from "typeorm";
+import EntitiyNotFoundException from "../exceptions/enitity-not-found-exception";
 import UnauthorizedException from "../exceptions/unauthorized-exception.js";
 
 export default class PropertyService{
@@ -22,32 +22,36 @@ export default class PropertyService{
     }
 
     async create(propertyInput, loggedUser) {
-        const { name, description, price, location } = propertyInput;
+        const { name, description, price, size, location } = propertyInput;
 
         const property = {
             name,
             description,
             price,
+            size,
             location,
-            owner: loggedUser.id
+            owner: loggedUser
         }
 
         return await this.repo.createProperty(property);
     }
 
-    async update(propertyInput) {
-        const { id, name, description, price, location } = propertyInput;
-        
-        const property = {
-            id,
-            name,
-            description,
-            price,
-            location,
+    async update(propertyInput, loggedUser) {
+        const property = await this.findById(propertyInput.id);
+
+        if(property.owner.id != loggedUser.id && loggedUser.role != 'admin'){
+            throw new UnauthorizedException('Unauthorized.');
         }
 
-        const result = this.repo.updateProperty(propertyInput.id, propertyInput);
-        if(!result.affected){
+        const { id, name, description, price, location } = propertyInput;
+        
+        property.name = name;
+        property.description = description;
+        property.price = price;
+        property.location = location;
+
+        const result = await this.repo.save(property);
+        if(!result){
             throw new EntitiyNotFoundException(`Property with id ${property.id} is not found`);
         }
 
@@ -55,12 +59,12 @@ export default class PropertyService{
     }
 
     async delete(id, loggedUser){
-        const property = this.findById();
+        const property = await this.findById(id);
 
         if(property.owner.id != loggedUser.id && loggedUser.role != 'admin'){
             throw new UnauthorizedException('Unauthorized.')
         }
 
-        return await this.repo.deleteProperty(id);
+        return await this.repo.deleteByProperty(property);
     }
 }
