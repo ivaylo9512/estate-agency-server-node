@@ -97,12 +97,12 @@ export default class UserService{
     async getUserFromToken(token, secret){
         const payload = verify(token, secret);
         
-        const user = await this.em.findOne(User, { id: payload.id }, ['refreshTokens'])
+        const user = await this.repo.findById(payload.id)
         if(!user){
             throw new UnauthorizedException('Unauthorized.');
         }
 
-        const foundToken = !user.refreshTokens.getItems().find(rt => rt.token == token);
+        const foundToken = !user.refreshTokens.find(rt => rt.token == token);
         if(!foundToken){
             throw new UnauthorizedException('Unauthorized.');
         }

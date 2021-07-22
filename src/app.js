@@ -29,7 +29,8 @@ export const initialize = async() => {
     app.use(express.static('src/public'));
 
     app.use(cors({
-        origin: 'http://localhost:3001'
+        origin: 'http://localhost:3001',
+        credentials: true
     }))
 
     app.use(cookieParser(process.env.COOKIE_SECRET));
