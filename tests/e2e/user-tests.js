@@ -18,6 +18,22 @@ const secondUser = {
     location: 'test location2',
     email: 'testEmail2@gmail.com'
 }
+const thirdUser = {
+    username: 'testUser3', 
+    password: 'testUserPassword3', 
+    name: 'testName3', 
+    description: 'test description3', 
+    location: 'test location3',
+    email: 'testEmail3@gmail.com'
+}
+const forthUser = {
+    username: 'testUser4', 
+    password: 'testUserPassword4', 
+    name: 'testName4', 
+    description: 'test description4', 
+    location: 'test location4',
+    email: 'testEmail4@gmail.com'
+}
 export const updatedFirstUser = {
     id: 1,
     username: 'testUserUpdated', 
@@ -38,8 +54,8 @@ export const adminToken = 'Bearer ' + getToken({
     id: 3, 
     role: 'admin'
 })
-export let firstToken;
-export let secondToken;
+export let firstToken, secondToken;
+let thirdToken, forthToken;
 
 const userTests = () => {
     return () => {
@@ -60,37 +76,84 @@ const userTests = () => {
                 expect(res.body).toEqual(firstUser);
         })
 
-        let password = secondUser.password;
-        it('should create second user', async() => {
+        it('should create users when logged user is admin', async() => {
 
             const res = await request(app)
-                .post('/users/register')
+                .post('/users/auth/create')
                 .set('Content-Type', 'Application/json')
-                .send(secondUser)
-                .expect(200);
+                .set('Authorization', adminToken)
+                .send([secondUser, thirdUser, forthUser])
 
-                secondUser.id = res.body.id;
-                secondToken = 'Bearer ' + res.get('Authorization');
+                const [{id}, {id: secondId}, {id: thirdId}] = res.body 
+                
+                secondUser.id = id;
+                thirdUser.id = secondId;
+                forthUser.id = thirdId;
+
                 delete secondUser.password;
+                delete thirdUser.password;
+                delete forthUser.password;
 
-                expect(res.body.id).toBe(2);
-                expect(res.body).toEqual(secondUser);
+                expect(id).toBe(2);
+                expect(secondId).toBe(3);
+                expect(thirdId).toBe(4);
+                expect(res.body).toEqual([secondUser, thirdUser, forthUser]);
         })
 
+        it('should throw UnauthorizedException when creating user with user that is not admin', async() => {
+            const res = await request(app)
+                .post('/users/auth/create')
+                .set('Content-Type', 'Application/json')
+                .set('Authorization', firstToken)
+                .send(secondUser)
+                .expect(401);
+
+                expect(res.text).toEqual('Unauthorized.');
+        })
+        
         it('should login user with username', async() => {
             const res = await request(app)
                 .post('/users/login')
                 .set('Content-Type', 'Application/json')
                 .send({
                     username: secondUser.username,
-                    password
+                    password: 'testUserPassword2'
                 })
                 .expect(200);
 
+                secondToken = 'Bearer ' + res.get('Authorization');
                 expect(res.body).toEqual(secondUser);
         })
 
-        it('should throw Unauthorized when login user with wrong password', async() => {
+        it('should login user with email', async() => {
+            const res = await request(app)
+                .post('/users/login')
+                .set('Content-Type', 'Application/json')
+                .send({
+                    email: thirdUser.email,
+                    password: 'testUserPassword3'
+                })
+                .expect(200);
+
+                thirdToken = 'Bearer ' + res.get('Authorization');
+                expect(res.body).toEqual(thirdUser);
+        })
+
+        it('should login user with email', async() => {
+            const res = await request(app)
+                .post('/users/login')
+                .set('Content-Type', 'Application/json')
+                .send({
+                    email: forthUser.email,
+                    password: 'testUserPassword4'
+                })
+                .expect(200);
+
+                forthToken = 'Bearer ' + res.get('Authorization');
+                expect(res.body).toEqual(forthUser);
+        })
+
+        it('should throw UnauthorizedException when login user with wrong password', async() => {
             const res = await request(app)
                 .post('/users/login')
                 .set('Content-Type', 'Application/json')
@@ -130,7 +193,7 @@ const userTests = () => {
                 expect(res.text).toEqual('Unauthorized.');
         })
 
-        it('should update user when udating with same looged user id', async() => {
+        it('should update user when updating with same looged user id', async() => {
             const res = await request(app)
                 .patch('/users/auth/update')
                 .set('Content-Type', 'Application/json')
@@ -140,7 +203,8 @@ const userTests = () => {
 
                 expect(res.body).toEqual(updatedFirstUser);
         })
-        it('should update user when udating with looged user with role: admin', async() => {
+
+        it('should update user when updating with looged user with role: admin', async() => {
             const res = await request(app)
                 .patch('/users/auth/update')
                 .set('Content-Type', 'Application/json')
@@ -149,6 +213,42 @@ const userTests = () => {
                 .expect(200);
 
                 expect(res.body).toEqual(updatedSecondUser);
+        })
+
+        it('should throw UnauthorizedException when deleting user from another loggedUser that is not admin: role', async() => {
+            const res = await request(app)
+                .delete('/users/auth/delete/1')
+                .set('Authorization', secondToken)
+                .expect(401);
+
+                expect(res.text).toEqual('Unauthorized.');
+        })
+
+        it('should delete user when deleting with same logged user id', async() => {
+            const res = await request(app)
+                .delete('/users/auth/delete/4')
+                .set('Authorization', forthToken)
+                .expect(200);
+
+                expect(res.body).toBe(true);
+        })
+
+        it('should delete user when deleting with logged user with role: admin', async() => {
+            const res = await request(app)
+                .delete('/users/auth/delete/3')
+                .set('Authorization', adminToken)
+                .expect(200);
+
+                expect(res.body).toBe(true);
+        })
+
+        it('should return false when deleting nonexistent user', async() => {
+            const res = await request(app)
+                .delete('/users/auth/delete/4')
+                .set('Authorization', forthToken)
+                .expect(200);
+
+                expect(res.body).toBe(false);
         })
     }
 } 
