@@ -16,7 +16,8 @@ const secondUser = {
     name: 'testName2', 
     description: 'test description2', 
     location: 'test location2',
-    email: 'testEmail2@gmail.com'
+    email: 'testEmail2@gmail.com',
+    role: 'user'
 }
 const thirdUser = {
     username: 'testUser3', 
@@ -24,7 +25,8 @@ const thirdUser = {
     name: 'testName3', 
     description: 'test description3', 
     location: 'test location3',
-    email: 'testEmail3@gmail.com'
+    email: 'testEmail3@gmail.com',
+    role: 'user'
 }
 const forthUser = {
     username: 'testUser4', 
@@ -32,7 +34,8 @@ const forthUser = {
     name: 'testName4', 
     description: 'test description4', 
     location: 'test location4',
-    email: 'testEmail4@gmail.com'
+    email: 'testEmail4@gmail.com',
+    role: 'user'
 }
 export const updatedFirstUser = {
     id: 1,
@@ -56,6 +59,7 @@ export const adminToken = 'Bearer ' + getToken({
 })
 export let firstToken, secondToken;
 let thirdToken, forthToken;
+let refreshToken;
 
 const userTests = () => {
     return () => {
@@ -69,6 +73,7 @@ const userTests = () => {
                 .expect(200);
 
                 firstUser.id = res.body.id;
+                firstUser.role = res.body.role;
                 firstToken = 'Bearer ' + res.get('Authorization');
                 delete firstUser.password 
 
@@ -108,7 +113,7 @@ const userTests = () => {
                 .send(secondUser)
                 .expect(401);
 
-                expect(res.text).toEqual('Unauthorized.');
+                expect(res.text).toBe('Unauthorized.');
         })
         
         it('should login user with username', async() => {
@@ -121,7 +126,12 @@ const userTests = () => {
                 })
                 .expect(200);
 
+                const refreshCookie = res.get('set-cookie').find(cookie => cookie.includes('refreshToken'));
+                expect(refreshCookie).toBeDefined();
+
+                refreshToken = refreshCookie.split(';')[0].split('refreshToken=')[1];
                 secondToken = 'Bearer ' + res.get('Authorization');
+         
                 expect(res.body).toEqual(secondUser);
         })
 
@@ -153,6 +163,14 @@ const userTests = () => {
                 expect(res.body).toEqual(forthUser);
         })
 
+        it('should get token', async() => {
+            const res = await request(app)
+                .get('/users/refreshToken')
+                .set('Cookie', `refreshToken=${refreshToken}`)
+                .expect(200)
+                .expect(res.get('Authorization')).toBeDefined();
+        })
+
         it('should throw UnauthorizedException when login user with wrong password', async() => {
             const res = await request(app)
                 .post('/users/login')
@@ -163,7 +181,7 @@ const userTests = () => {
                 })
                 .expect(401);
 
-                expect(res.text).toEqual('Incorrect username, pasword or email.');
+                expect(res.text).toBe('Incorrect username, pasword or email.');
         })
 
         it('should return firstUser when findById with id 1', async() => {
@@ -179,7 +197,7 @@ const userTests = () => {
                 .get('/users/findById/252')
                 .expect(404);
 
-                expect(res.text).toEqual('Could not find any entity of type "User" matching: {\n    "id": 252\n}');
+                expect(res.text).toBe('Could not find any entity of type "User" matching: {\n    "id": 252\n}');
         })
 
         it('should throw when updating user from another loggedUser that is not admin: role', async() => {
@@ -190,10 +208,10 @@ const userTests = () => {
                 .send(updatedFirstUser)
                 .expect(401);
 
-                expect(res.text).toEqual('Unauthorized.');
+                expect(res.text).toBe('Unauthorized.');
         })
 
-        it('should update user when updating with same looged user id', async() => {
+        it('should update user when updating with same logged user id', async() => {
             const res = await request(app)
                 .patch('/users/auth/update')
                 .set('Content-Type', 'Application/json')
@@ -204,7 +222,7 @@ const userTests = () => {
                 expect(res.body).toEqual(updatedFirstUser);
         })
 
-        it('should update user when updating with looged user with role: admin', async() => {
+        it('should update user when updating with logged user with role: admin', async() => {
             const res = await request(app)
                 .patch('/users/auth/update')
                 .set('Content-Type', 'Application/json')
@@ -221,14 +239,14 @@ const userTests = () => {
                 .set('Authorization', secondToken)
                 .expect(401);
 
-                expect(res.text).toEqual('Unauthorized.');
+                expect(res.text).toBe('Unauthorized.');
         })
 
         it('should delete user when deleting with same logged user id', async() => {
             const res = await request(app)
                 .delete('/users/auth/delete/4')
                 .set('Authorization', forthToken)
-                .expect(200);
+                expect(200)
 
                 expect(res.body).toBe(true);
         })
@@ -249,6 +267,17 @@ const userTests = () => {
                 .expect(200);
 
                 expect(res.body).toBe(false);
+        })
+
+        it('should throw EntityNotFound when updating nonexistent user', async() => {
+            const res = await request(app)
+                .patch('/users/auth/update')
+                .set('Content-Type', 'Application/json')
+                .set('Authorization', forthToken)
+                .send(forthUser)
+                .expect(404);
+                
+                expect(res.text).toBe('User with id: 4 is not found.');
         })
     }
 } 
