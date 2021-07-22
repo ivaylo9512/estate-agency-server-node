@@ -9,6 +9,7 @@ const jwtExpiry = eval(process.env.JWT_EXPIRY || DEFAULT_JWT_EXPIRY);
 if(typeof jwtSecret === 'undefined' || typeof refreshSecret === 'undefined'){
     throw new Error('Refresh or jwt secrets are missing.');
 }
+
 export const COOKIE_OPTIONS = {
     httpOnly: true,
     secure: true,

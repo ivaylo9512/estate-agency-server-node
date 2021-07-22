@@ -1,11 +1,10 @@
 import { Router } from "express";
 import { getToken, getRefreshToken, COOKIE_OPTIONS, refreshExpiry } from '../authentication/jwt.js'
-import { refreshSecret } from "../authentication/authenticate";
-import UnauthorizedException from "../exceptions/unauthorized-exception.js";
+import { refreshSecret } from "../authentication/jwt.js";
 import { UserDto } from "../entities/dtos/user-dto.js";
 import { RefreshToken } from "../entities/refresh-token.js";
 import { getConnection } from 'typeorm'
-import {NODE_ENV} from "../app.js";
+import { NODE_ENV } from "../app.js";
 
 const router = Router();
 
@@ -16,9 +15,6 @@ router.get('/findById/:id', async(req, res) => {
 
 router.patch('/auth/update', async(req, res) => {
     const loggedUser = req.user;
-    if(!loggedUser){
-        throw new UnauthorizedException('Unauthorized.');
-    }
 
     res.send(new UserDto(await req.userService.update(req.body, loggedUser)));
 })
@@ -52,8 +48,7 @@ router.post('/auth/create', async(req, res) => {
 
 router.get('/refreshToken', async(req, res) => {
     const { signedCookies: { refreshToken } } = req
-    
-    const user = await req.service.getUserFromToken(refreshToken, refreshSecret);
+    const user = await req.userService.getUserFromToken(refreshToken, refreshSecret);
 
     const token = getToken(user);
 
@@ -69,7 +64,7 @@ const setTokens = async (res, user, req) => {
         token: getRefreshToken(user)
     });
 
-    res.cookie("refreshToken", refreshToken, COOKIE_OPTIONS);
+    res.cookie("refreshToken", refreshToken.token, COOKIE_OPTIONS);
     res.header('Access-Control-Expose-Headers', 'Authorization'); 
     res.header('Authorization', token);
 
