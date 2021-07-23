@@ -6,11 +6,11 @@ import { getConnection } from 'typeorm';
 export let app;
 describe('test', () => {
     beforeAll(async() => {
-        return app = await initialize();
+        app = await initialize();
     })
 
-    describe('Users', userTests())
-    describe('Properties', propertyTests())
+    describe('Users', userTests)
+    describe('Properties', propertyTests)
 
     afterAll(async() => {
         await getConnection('test').close()
