@@ -28,28 +28,51 @@ export const updateValidatorRules = () => [
 ]
 
 export const registerValidator = async(req, res, next) => {
-    const result = validationResult(req);
-
-    if(!result.isEmpty()){
-        const errors = result.errors.reduce((errorObject, error) => {
-            errorObject[error.param] = error.msg
-
-            return errorObject;
-        },{})
-
-        return res.status(422).send(errors)
-    }
-
-    const {username, password} = req.body;
-    const user = await req.userService.findByUsernameOrEmail(username, password); 
-    if(user){
-        return res.status(422).send({username: 'User with given username or email already exists.'})
-    }
-
+    checkForInputErrors(req, res);
+    checkForUsernameAndEmail(req, res);
     next()
 }
 
 export const createValidator = async(req, res, next) => {
+    checkForArrayInputErrors(req, res);
+    checkForUsernamesAndEmails(req, res);
+    next();
+}
+
+export const updateValidator = async(req, res, next) => {
+    const loggedUser = req.user;
+    const userInput = req.body;
+    const userService = req.userService;
+
+    if(userInput != loggedUser.id && loggedUser.role != 'admin'){
+        res.status(401).send('Unauthorized.');
+    }
+
+    checkForInputErrors();
+
+    const user = getUserOrFail(req, res);
+
+    validateUpdateUsername(user.username, req, res);
+
+    req.foundUser = user;
+    next();
+}
+
+const checkForInputErrors = (req, res) => {
+    const result = validationResult(req);
+
+    if(!result.isEmpty()){
+        const errors = result.errors.reduce((errorObject, error) => {
+            errorObject[error.param] = error.msg;
+            
+            return errorObject;
+        }, {})
+
+        return res.status(422).send(errors);
+    }
+}
+
+const checkForArrayInputErrors = (req, res) => {
     const result = validationResult(req);
 
     if(!result.isEmpty()){
@@ -68,7 +91,9 @@ export const createValidator = async(req, res, next) => {
 
         return res.status(422).send(error);
     }
+}
 
+const checkForUsernameAndEmail = (req, res) => {
     const error = await req.body.users.reduce(async(errorObject, user, i) => {
         const {username, email} = user;
         const foundUser = await req.userService.findByUsernameOrEmail(username, email);
@@ -81,27 +106,38 @@ export const createValidator = async(req, res, next) => {
         }
         
         return errors;
-    }, {}) 
+    }, {})
 
     if(Object.keys(error).length > 0){
         return res.status(422).send(error);
     }
-
-    next();
 }
 
-export const updateValidator = async(req, res, next) => {
-    const result = validationResult(req);
+const checkForUsernameAndEmail = (req, res) => {
+    const {username, email} = req.body;
+    const user = await req.userService.findByUsernameOrEmail(username, email); 
+    if(user){
+        return res.status(422).send({username: 'User with given username or email already exists.'})
+    }
+}
 
-    if(!result.isEmpty()){
-        const errors = result.errors.reduce((errorObject, error) => {
-            errorObject[error.param] = error.msg;
-            
-            return errorObject;
-        }, {})
-
-        return res.status(422).send(errors);
+const validateUpdateUsername = (oldUsername, req, res) => {
+    const oldUsername = req.body.username;
+    if(oldUsername === newUsername){
+        return;
     }
 
-    next();
+    const user = req.userService.findByUsername(newUsername);
+    if(user){
+        res.status(422).send('Username is already in use.')
+    }
+}
+
+const getUserOrFail = (req, res) => {
+    const id = req.body.id;
+    const user = req.userService.findById(id);
+    if(!user){
+        return res.status(422).send({ id: `User with ${id} doesn't exist`});
+    } 
+    return user;
 }
