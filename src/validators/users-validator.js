@@ -1,24 +1,5 @@
 import { check, validationResult } from 'express-validator';
 
-export const registerValidation = async(req, res, next) => {
-    const result = validationResult(req);
-
-    if(!result.isEmpty()){
-        const errors = result.errors.reduce((errorObject, error) => {
-            errorObject[error.param] = error.msg
-            return errorObject;
-        },{})
-        return res.status(422).send(errors)
-    }
-
-    const {username, password} = req.body;
-    const user = await req.userService.findByUsernameOrEmail(username, password); 
-    if(user){
-        return res.status(422).send({username: 'User with given username or email already exists.'})
-    }
-
-    next()
-}
 export const registerValidationRules = () => [
     check('email', 'Must be a valid email.').isEmail(),
     check('password', 'Password must be between 10 and 22 characters').isLength({min:10, max: 22}),
@@ -36,7 +17,39 @@ export const createValidationRules = () => [
     check('users.*.location', 'You must provide a location.').notEmpty(),
     check('users.*.description', 'You must provide a description.').notEmpty()
 ]
-export const createValidation = async(req, res, next) => {
+
+export const updateValidatorRules = () => [
+    check('id', 'You must provide an id.').notEmpty(),
+    check('email', 'Must be a valid email.').isEmail(),
+    check('username', 'Username must be between 8 and 20 characters').isLength({min:8, max: 20}), 
+    check('name', 'You must provide a name.').notEmpty(),
+    check('location', 'You must provide a location.').notEmpty(),
+    check('description', 'You must provide a description.').notEmpty()
+]
+
+export const registerValidator = async(req, res, next) => {
+    const result = validationResult(req);
+
+    if(!result.isEmpty()){
+        const errors = result.errors.reduce((errorObject, error) => {
+            errorObject[error.param] = error.msg
+
+            return errorObject;
+        },{})
+
+        return res.status(422).send(errors)
+    }
+
+    const {username, password} = req.body;
+    const user = await req.userService.findByUsernameOrEmail(username, password); 
+    if(user){
+        return res.status(422).send({username: 'User with given username or email already exists.'})
+    }
+
+    next()
+}
+
+export const createValidator = async(req, res, next) => {
     const result = validationResult(req);
 
     if(!result.isEmpty()){
@@ -72,6 +85,22 @@ export const createValidation = async(req, res, next) => {
 
     if(Object.keys(error).length > 0){
         return res.status(422).send(error);
+    }
+
+    next();
+}
+
+export const updateValidator = async(req, res, next) => {
+    const result = validationResult(req);
+
+    if(!result.isEmpty()){
+        const errors = result.errors.reduce((errorObject, error) => {
+            errorObject[error.param] = error.msg;
+            
+            return errorObject;
+        }, {})
+
+        return res.status(422).send(errors);
     }
 
     next();

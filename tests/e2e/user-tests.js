@@ -347,5 +347,26 @@ const userTests = () => {
             
             expect(res.body).toEqual(error);
     })
+
+    it('should return 422 when updating users with invalid input.', async() => {
+        const error = {
+            id: 'You must provide an id.', 
+            email: 'Must be a valid email.', 
+            username: 'Username must be between 8 and 20 characters', 
+            name: 'You must provide a name.', 
+            location: 'You must provide a location.', 
+            description: 'You must provide a description.'
+        }
+
+        const res = await request(app)
+            .patch('/users/auth/update')
+            .set('Content-Type', 'Application/json')
+            .set('Authorization', adminToken)
+            .send({})
+            .expect(422);
+
+            expect(res.body).toEqual(error);
+    })
+
 } 
 export default userTests;
