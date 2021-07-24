@@ -36,10 +36,9 @@ const userTests = () => {
             .post('/users/register')
             .set('Content-Type', 'Application/json')
             .send(firstUser)
-            .expect(200);
+            .expect(200)
 
             firstUser.id = res.body.id;
-            firstUser.role = res.body.role;
             firstToken = 'Bearer ' + res.get('Authorization');
             delete firstUser.password 
 
@@ -47,13 +46,46 @@ const userTests = () => {
             expect(res.body).toEqual(firstUser);
     })
 
-    it('should create users when logged user is admin', async() => {
+    it('should retrun 422 when register user with exsisting username', async() => {
+        const user = {...firstUser, email: 'uniqueEmail@gmail.com', password: 'testPassword'};
+        
+        const res = await request(app)
+            .post('/users/register')
+            .set('Content-Type', 'Application/json')
+            .send(user)
+            .expect(422);
 
+            expect(res.body.username).toBe('User with given username or email already exists.');
+    })
+
+    it('should retrun 422 when register user with invalid fields', async() => {
+        const errors = {
+            email: "Must be a valid email.", 
+            password: "Password must be between 10 and 22 characters",
+            username: "Username must be between 8 and 20 characters", 
+            name: "You must provide a name.", 
+            location: "You must provide a location.", 
+            description: "You must provide a description."
+        }
+
+        const res = await request(app)
+            .post('/users/register')
+            .set('Content-Type', 'Application/json')
+            .send({})
+            .expect(422);
+
+            expect(res.body).toEqual(errors);
+    })
+
+    it('should create users when logged user is admin', async() => {
         const res = await request(app)
             .post('/users/auth/create')
             .set('Content-Type', 'Application/json')
             .set('Authorization', adminToken)
-            .send([secondUser, thirdUser, forthUser])
+            .send({
+                users: [secondUser, thirdUser, forthUser]
+            })
+            .expect(200)
 
             const [{id}, {id: secondId}, {id: thirdId}] = res.body 
             
@@ -72,13 +104,15 @@ const userTests = () => {
     })
 
     it('should throw UnauthorizedException when creating user with user that is not admin', async() => {
+        const user = {...firstUser, password: 'testPassword'}
         const res = await request(app)
             .post('/users/auth/create')
             .set('Content-Type', 'Application/json')
             .set('Authorization', firstToken)
-            .send(secondUser)
+            .send({ users: [ user ] })
             .expect(401);
 
+            console.log(res);
             expect(res.text).toBe('Unauthorized.');
     })
     
@@ -244,6 +278,29 @@ const userTests = () => {
             .expect(404);
             
             expect(res.text).toBe('User with id: 4 is not found.');
+    })
+
+    it('should return 422 when creating users with wrong input', async() => {
+        const error = { users0: {
+            email: 'Must be a valid email.',
+            password: 'Password must be between 10 and 22 characters',
+            username: 'Username must be between 8 and 20 characters',
+            name: 'You must provide a name.',
+            location: 'You must provide a location.',
+            description: 'You must provide a description.'
+          }
+        }
+
+        const res = await request(app)
+            .post('/users/auth/create')
+            .set('Content-Type', 'Application/json')
+            .set('Authorization', adminToken)
+            .send({
+                users: [{}]
+            })
+            .expect(422);
+
+            expect(res.body).toEqual(error);
     })
     
 } 
