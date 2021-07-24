@@ -17,11 +17,17 @@ export const COOKIE_OPTIONS = {
     maxAge: refreshExpiry * 1000,
     sameSite: "none",
 }
-export const getToken = (user) => sign({...user}, 
+export const getToken = (user) => sign({
+    id: user.id, 
+    role: user.role
+}, 
     jwtSecret, {
         expiresIn: jwtExpiry,
 })
-export const getRefreshToken = (user) => sign({...user}, 
+export const getRefreshToken = (user) => sign({
+    id: user.id, 
+    role: user.role
+},
     refreshSecret, {
         expiresIn: refreshExpiry
 })
