@@ -28,32 +28,49 @@ export const updateValidatorRules = () => [
 ]
 
 export const registerValidator = async(req, res, next) => {
-    checkForInputErrors(req, res);
-    checkForUsernameAndEmail(req, res);
+    if(checkForInputErrors(req, res)){
+        return;
+    }
+
+    if(await checkForUsernameAndEmail(req, res)){
+        return;
+    }
+
     next()
 }
 
 export const createValidator = async(req, res, next) => {
-    checkForArrayInputErrors(req, res);
-    checkForUsernamesAndEmails(req, res);
+    if(checkForArrayInputErrors(req, res)){
+        return;
+    }
+
+    if(await checkForUsernamesAndEmails(req, res)){
+        return;
+    }
+
     next();
 }
 
 export const updateValidator = async(req, res, next) => {
     const loggedUser = req.user;
     const userInput = req.body;
-    const userService = req.userService;
 
     if(userInput != loggedUser.id && loggedUser.role != 'admin'){
         res.status(401).send('Unauthorized.');
     }
 
-    checkForInputErrors();
+    if(checkForInputErrors()){
+        return;
+    }
 
-    const user = getUserOrFail(req, res);
+    if(!await getUserOrFail(req, res)){
+        return;
+    }
 
-    validateUpdateUsername(user.username, req, res);
-
+    if(await validateUpdateUsername(user.username, req, res)){
+        return;
+    }
+    
     req.foundUser = user;
     next();
 }
@@ -68,7 +85,8 @@ const checkForInputErrors = (req, res) => {
             return errorObject;
         }, {})
 
-        return res.status(422).send(errors);
+        res.status(422).send(errors);
+        return errors;
     }
 }
 
@@ -76,7 +94,7 @@ const checkForArrayInputErrors = (req, res) => {
     const result = validationResult(req);
 
     if(!result.isEmpty()){
-        const error = result.errors.reduce((errorObject, error) => {
+        const errors = result.errors.reduce((errorObject, error) => {
             const params = error.param.match(/[^\[\].]+/g);
             const user = params[0] + params[1];
             const paramName = params[2];
@@ -89,11 +107,12 @@ const checkForArrayInputErrors = (req, res) => {
             return errorObject;
         }, {})
 
-        return res.status(422).send(error);
+        res.status(422).send(errors);
+        return errors;
     }
 }
 
-const checkForUsernameAndEmail = (req, res) => {
+const checkForUsernamesAndEmails = async(req, res) => {
     const error = await req.body.users.reduce(async(errorObject, user, i) => {
         const {username, email} = user;
         const foundUser = await req.userService.findByUsernameOrEmail(username, email);
@@ -109,33 +128,36 @@ const checkForUsernameAndEmail = (req, res) => {
     }, {})
 
     if(Object.keys(error).length > 0){
-        return res.status(422).send(error);
+        res.status(422).send(error);
+        return errors;
     }
 }
 
-const checkForUsernameAndEmail = (req, res) => {
+const checkForUsernameAndEmail = async(req, res) => {
     const {username, email} = req.body;
     const user = await req.userService.findByUsernameOrEmail(username, email); 
     if(user){
-        return res.status(422).send({username: 'User with given username or email already exists.'})
+        res.status(422).send({username: 'User with given username or email already exists.'});
+        return user;
     }
 }
 
-const validateUpdateUsername = (oldUsername, req, res) => {
-    const oldUsername = req.body.username;
+const validateUpdateUsername = async(oldUsername, req, res) => {
+    const newUsername = req.body.username;
     if(oldUsername === newUsername){
         return;
     }
 
-    const user = req.userService.findByUsername(newUsername);
+    const user = await req.userService.findByUsername(newUsername);
     if(user){
         res.status(422).send('Username is already in use.')
+        return user;
     }
 }
 
-const getUserOrFail = (req, res) => {
+const getUserOrFail = async(req, res) => {
     const id = req.body.id;
-    const user = req.userService.findById(id);
+    const user = await req.userService.findById(id);
     if(!user){
         return res.status(422).send({ id: `User with ${id} doesn't exist`});
     } 
