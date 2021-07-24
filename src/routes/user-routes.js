@@ -5,6 +5,7 @@ import { UserDto } from "../entities/dtos/user-dto.js";
 import { RefreshToken } from "../entities/refresh-token.js";
 import { getConnection } from 'typeorm'
 import { NODE_ENV } from "../app.js";
+import { registerValidationRules, registerValidator, createValidationRules, createValidator, updateValidatorRules, updateValidator } from '../validators/users-validator.js'
 
 const router = Router();
 
@@ -13,10 +14,8 @@ router.get('/findById/:id', async(req, res) => {
     res.send(new UserDto(await req.userService.findById(Number(req.params.id))));
 })
 
-router.patch('/auth/update', async(req, res) => {
-    const loggedUser = req.user;
-
-    res.send(new UserDto(await req.userService.update(req.body, loggedUser)));
+router.patch('/auth/update', updateValidatorRules(), updateValidator, async(req, res) => {
+    res.send(new UserDto(await req.userService.update(req.body, req.foundUser)));
 })
 
 router.delete('/auth/delete/:id', async(req, res) => {
@@ -31,17 +30,18 @@ router.post('/login', async(req, res) => {
 
     res.send(new UserDto(user));
 })
-router.post('/register', async(req, res) => {
+
+router.post('/register', registerValidationRules(), registerValidator, async(req, res) => {
     const user = await req.userService.register(req.body);
-    
+
     await setTokens(res, user, req);
 
     res.send(new UserDto(user));
 })
 
-router.post('/auth/create', async(req, res) => {
+router.post('/auth/create', createValidationRules(), createValidator, async(req, res) => {
     const loggedUser = req.user;
-    const users = await req.userService.create(req.body, loggedUser);
+    const users = await req.userService.create(req.body.users, loggedUser);
     
     res.send(users.map(user => new UserDto(user)));
 })
@@ -51,7 +51,7 @@ router.get('/refreshToken', async(req, res) => {
     const user = await req.userService.getUserFromToken(refreshToken, refreshSecret);
 
     const token = getToken(user);
-
+  
     res.header('Access-Control-Expose-Headers', 'Authorization'); 
     res.header('Authorization', token);
     

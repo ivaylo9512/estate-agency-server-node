@@ -20,6 +20,10 @@ export default class UserService{
         return await this.repo.findUserOrClause({username, email}, ['user'])
     }
 
+    async findUsersByUsernameOrEmail(username, email){
+        return await this.repo.findUsersOrClause({username, email}, ['user'])
+    }
+
     async login(userInput) {
         let { username, password, email } = userInput; 
         let user = await this.repo.findUserOrClause({ username, email }, 
@@ -64,25 +68,16 @@ export default class UserService{
         return await this.repo.createUser(user);
     }
 
-    async update(userInput){
-        const { id, username, name, description, location, email } =  userInput;
+    async update(userInput, foundUser){
+        const { username, name, description, location, email } =  userInput;
 
-        const user = {
-            id,
-            username,
-            name,
-            username,
-            description,
-            location,
-            email
-        }
+        foundUser.username = username;
+        foundUser.email = email;
+        foundUser.name = name;
+        foundUser.description = description;
+        foundUser.location = location;
 
-        const result = await this.repo.updateUser(user);
-        if(!result.affected){
-            throw new EntitiyNotFoundException(`User with id: ${userInput.id} is not found.`)
-        }
-        
-        return userInput;
+        return await this.repo.save(foundUser);
     }
 
     async delete(id, loggedUser){
