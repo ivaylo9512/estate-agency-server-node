@@ -28,11 +28,7 @@ export const updateValidatorRules = () => [
 ]
 
 export const registerValidator = async(req, res, next) => {
-    if(checkForInputErrors(req, res)){
-        return;
-    }
-
-    if(await checkForUsernameAndEmail(req, res)){
+    if(checkForInputErrors(req, res) || await validateCreateUsernameAndEmail(req, res)){
         return;
     }
 
@@ -40,11 +36,7 @@ export const registerValidator = async(req, res, next) => {
 }
 
 export const createValidator = async(req, res, next) => {
-    if(checkForArrayInputErrors(req, res)){
-        return;
-    }
-
-    if(await checkForUsernamesAndEmails(req, res)){
+    if(checkForArrayInputErrors(req, res) || await validateCreateUsernamesAndEmails(req, res)){
         return;
     }
 
@@ -52,26 +44,14 @@ export const createValidator = async(req, res, next) => {
 }
 
 export const updateValidator = async(req, res, next) => {
-    const loggedUser = req.user;
-    const userInput = req.body;
-
-    if(userInput != loggedUser.id && loggedUser.role != 'admin'){
+    if(req.body.id != req.user.id && req.user.role != 'admin'){
         res.status(401).send('Unauthorized.');
     }
 
-    if(checkForInputErrors()){
+    if(checkForInputErrors(req, res) || !await getUserOrFail(req, res) || await validateUpdateUsernameAndEmail(req, res)){
         return;
     }
 
-    if(!await getUserOrFail(req, res)){
-        return;
-    }
-
-    if(await validateUpdateUsername(user.username, req, res)){
-        return;
-    }
-    
-    req.foundUser = user;
     next();
 }
 
@@ -112,7 +92,7 @@ const checkForArrayInputErrors = (req, res) => {
     }
 }
 
-const checkForUsernamesAndEmails = async(req, res) => {
+const validateCreateUsernamesAndEmails = async(req, res) => {
     const error = await req.body.users.reduce(async(errorObject, user, i) => {
         const {username, email} = user;
         const foundUser = await req.userService.findByUsernameOrEmail(username, email);
@@ -133,7 +113,7 @@ const checkForUsernamesAndEmails = async(req, res) => {
     }
 }
 
-const checkForUsernameAndEmail = async(req, res) => {
+const validateCreateUsernameAndEmail = async(req, res) => {
     const {username, email} = req.body;
     const user = await req.userService.findByUsernameOrEmail(username, email); 
     if(user){
@@ -142,15 +122,12 @@ const checkForUsernameAndEmail = async(req, res) => {
     }
 }
 
-const validateUpdateUsername = async(oldUsername, req, res) => {
-    const newUsername = req.body.username;
-    if(oldUsername === newUsername){
-        return;
-    }
+const validateUpdateUsernameAndEmail = async(req, res) => {
+    const { id, username, email } = req.body;
+    const users = (await req.userService.findUsersByUsernameOrEmail(username, email)).filter(user => user.id != id);
 
-    const user = await req.userService.findByUsername(newUsername);
-    if(user){
-        res.status(422).send('Username is already in use.')
+    if(users.length > 0){
+        res.status(422).send({username: 'Username or email is already in use.' })
         return user;
     }
 }
@@ -161,5 +138,7 @@ const getUserOrFail = async(req, res) => {
     if(!user){
         return res.status(422).send({ id: `User with ${id} doesn't exist`});
     } 
+
+    req.foundUser = user;
     return user;
 }
