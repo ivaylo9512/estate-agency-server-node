@@ -11,6 +11,14 @@ export default class UserService{
     async findById(id){
         return await this.repo.findById(id);
     }
+    
+    async findByUsername(username){
+        return await this.repo.findByUsername(username);
+    }
+
+    async findByUsernameOrEmail(username, email){
+        return await this.repo.findUserOrClause({username, email}, ['user'])
+    }
 
     async login(userInput) {
         let { username, password, email } = userInput; 
@@ -56,11 +64,7 @@ export default class UserService{
         return await this.repo.createUser(user);
     }
 
-    async update(userInput, loggedUser){
-        if(userInput.id != loggedUser.id && loggedUser.role != 'admin'){
-            throw new UnauthorizedException('Unauthorized.');
-        }
-
+    async update(userInput){
         const { id, username, name, description, location, email } =  userInput;
 
         const user = {
@@ -96,8 +100,8 @@ export default class UserService{
 
     async getUserFromToken(token, secret){
         const payload = verify(token, secret);
-        
         const user = await this.repo.findById(payload.id)
+        
         if(!user){
             throw new UnauthorizedException('Unauthorized.');
         }
@@ -106,7 +110,7 @@ export default class UserService{
         if(!foundToken){
             throw new UnauthorizedException('Unauthorized.');
         }
-
+        
         return user;
     }
 

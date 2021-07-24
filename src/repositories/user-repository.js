@@ -7,6 +7,10 @@ export default class UserRepository extends Repository{
         return this.findOneOrFail({ id });
     }
 
+    findByUsername(username){
+        return this.findOneOrFail({ username });
+    }
+
     findUser(user){
         return this.findOne(user)
     }
