@@ -36,7 +36,7 @@ const userTests = () => {
             .post('/users/register')
             .set('Content-Type', 'Application/json')
             .send(firstUser)
-            .expect(200)
+            .expect(200);
 
             firstUser.id = res.body.id;
             firstToken = 'Bearer ' + res.get('Authorization');
@@ -48,6 +48,19 @@ const userTests = () => {
 
     it('should retrun 422 when register user with exsisting username', async() => {
         const user = {...firstUser, email: 'uniqueEmail@gmail.com', password: 'testPassword'};
+        
+        const res = await request(app)
+            .post('/users/register')
+            .set('Content-Type', 'Application/json')
+            .send(user)
+            .expect(422);
+
+            expect(res.body.username).toBe('User with given username or email already exists.');
+    })
+
+    
+    it('should retrun 422 when register user with exsisting email', async() => {
+        const user = {...firstUser, username: 'uniqueUsername', password: 'testPassword'};
         
         const res = await request(app)
             .post('/users/register')
@@ -85,7 +98,7 @@ const userTests = () => {
             .send({
                 users: [secondUser, thirdUser, forthUser]
             })
-            .expect(200)
+            expect(200);
 
             const [{id}, {id: secondId}, {id: thirdId}] = res.body 
             
@@ -172,6 +185,7 @@ const userTests = () => {
         const res = await request(app)
             .get('/users/refreshToken')
             .set('Cookie', `refreshToken=${refreshToken}`)
+            expect(200);
             
             expect(res.get('Authorization')).toBeDefined();
     })
@@ -205,7 +219,7 @@ const userTests = () => {
             expect(res.text).toBe('Could not find any entity of type "User" matching: {\n    "id": 252\n}');
     })
 
-    it('should throw when updating user from another loggedUser that is not admin: role', async() => {
+    it('should return 401 when updating user from another loggedUser that is not admin: role', async() => {
         const res = await request(app)
             .patch('/users/auth/update')
             .set('Content-Type', 'Application/json')
@@ -274,15 +288,15 @@ const userTests = () => {
             expect(res.body).toBe(false);
     })
 
-    it('should throw EntityNotFound when updating nonexistent user', async() => {
+    it('should return 404 when updating nonexistent user', async() => {
         const res = await request(app)
             .patch('/users/auth/update')
             .set('Content-Type', 'Application/json')
             .set('Authorization', forthToken)
             .send(forthUser)
             .expect(404);
-            
-            expect(res.text).toBe('User with id: 4 is not found.');
+
+            expect(res.text).toBe(`Could not find any entity of type "User" matching: {\n    "id": ${forthUser.id}\n}`);
     })
 
     it('should return 422 when creating users with wrong input', async() => {
@@ -348,7 +362,7 @@ const userTests = () => {
             expect(res.body).toEqual(error);
     })
 
-    it('should return 422 when updating users with invalid input.', async() => {
+    it('should return 422 when updating user with invalid input.', async() => {
         const error = {
             id: 'You must provide an id.', 
             email: 'Must be a valid email.', 
@@ -363,6 +377,34 @@ const userTests = () => {
             .set('Content-Type', 'Application/json')
             .set('Authorization', adminToken)
             .send({})
+            .expect(422);
+
+            expect(res.body).toEqual(error);
+    })
+
+    it('should return 422 when updating user with username that is in use.', async() => {
+        const user = {...updatedFirstUser, username: updatedSecondUser.username}
+        const error = {username: 'Username or email is already in use.'};
+        
+        const res = await request(app)
+            .patch('/users/auth/update')
+            .set('Content-Type', 'Application/json')
+            .set('Authorization', firstToken)
+            .send(user)
+            .expect(422);
+
+            expect(res.body).toEqual(error);
+    })
+
+    it('should return 422 when updating user with email that is in use.', async() => {
+        const user = {...updatedFirstUser, email: updatedSecondUser.email}
+        const error = {username: 'Username or email is already in use.'};
+
+        const res = await request(app)
+            .patch('/users/auth/update')
+            .set('Content-Type', 'Application/json')
+            .set('Authorization', firstToken)
+            .send(user)
             .expect(422);
 
             expect(res.body).toEqual(error);
