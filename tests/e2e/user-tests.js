@@ -104,7 +104,13 @@ const userTests = () => {
     })
 
     it('should throw UnauthorizedException when creating user with user that is not admin', async() => {
-        const user = {...firstUser, password: 'testPassword'}
+        const user = {
+            ...firstUser,
+            username: 'uniqueUsername', 
+            email: 'uniqueEmail@gmail.com',
+            password: 'testPassword'
+        }
+
         const res = await request(app)
             .post('/users/auth/create')
             .set('Content-Type', 'Application/json')
@@ -112,7 +118,6 @@ const userTests = () => {
             .send({ users: [ user ] })
             .expect(401);
 
-            console.log(res);
             expect(res.text).toBe('Unauthorized.');
     })
     
@@ -302,6 +307,45 @@ const userTests = () => {
 
             expect(res.body).toEqual(error);
     })
+
+    it('should return 422 when creating users with usernames that are already in use.', async() => {
+        const error = {
+            user0: { username: 'User with given username or email already exists.'}, 
+            user1: {username: 'User with given username or email already exists.'}
+        }
+        const firstUser = {...updatedFirstUser, email: 'uniqueEmail1@gmail.com', password: 'testPassword'};
+        const secondUser = {...updatedSecondUser, email: 'uniqueEmail1@gmail.com', password: 'testPassword'};
+
+        const res = await request(app)
+            .post('/users/auth/create')
+            .set('Content-Type', 'Application/json')
+            .set('Authorization', adminToken)
+            .send({
+                users: [firstUser, secondUser]
+            })
+            .expect(422);
+
+            expect(res.body).toEqual(error)
+    })
     
+    it('should return 422 when creating users with emails that are already in use.', async() => {
+        const error = {
+            user0: { username: 'User with given username or email already exists.'}, 
+            user1: {username: 'User with given username or email already exists.'}
+        }
+        const firstUser = {...updatedFirstUser, username: 'uniqueUsername', password: 'testPassword'};
+        const secondUser = {...updatedSecondUser, username: 'uniqueUsername1', password: 'testPassword'};
+
+        const res = await request(app)
+            .post('/users/auth/create')
+            .set('Content-Type', 'Application/json')
+            .set('Authorization', adminToken)
+            .send({
+                users: [firstUser, secondUser]
+            })
+            .expect(422);
+            
+            expect(res.body).toEqual(error);
+    })
 } 
 export default userTests;
