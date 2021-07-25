@@ -56,5 +56,60 @@ const propertyTests = () => {
 
             expect(res.body).toEqual(updateProperty);
     })
+
+    it('should return 401 when deleting property wtihout token', async() => {
+        const res = await request(app)
+            .delete('/propeprties/auth/delete/1')
+            .expect(401);
+
+            expect(res.text).toBe('No auth token');
+    })
+
+    it('should return 401 when deleting property with incorrect token', async() => {
+        const res = await request(app)
+            .delete('/propeprties/auth/delete/1')
+            .set('Authorization', 'Bearer incorrect token')
+            .expect(401);
+
+            expect(res.text).toBe('jwt malformed');
+    })
+
+    it('should return 401 when updating property wtihout token', async() => {
+        const res = await request(app)
+            .patch('/propeprties/auth/update')
+            .set('Content-Type', 'Application/json')
+            .expect(401);
+
+            expect(res.text).toBe('No auth token');
+    })
+
+    it('should return 401 when updating property with incorrect token', async() => {
+        const res = await request(app)
+            .patch('/propeprties/auth/update')
+            .set('Content-Type', 'Application/json')
+            .set('Authorization', 'Bearer incorrect token')
+            .expect(401);
+
+            expect(res.text).toBe('jwt malformed');
+    })
+
+    it('should return 401 when creating property wtihout token', async() => {
+        const res = await request(app)
+            .post('/propeprties/auth/create')
+            .set('Content-Type', 'Application/json')
+            .expect(401);
+
+            expect(res.text).toBe('No auth token');
+    })
+
+    it('should return 401 when creating property with incorrect token', async() => {
+        const res = await request(app)
+            .post('/propeprties/auth/create')
+            .set('Content-Type', 'Application/json')
+            .set('Authorization', 'Bearer incorrect token')
+            .expect(401);
+
+            expect(res.text).toBe('jwt malformed');
+    })
 };
 export default propertyTests;
