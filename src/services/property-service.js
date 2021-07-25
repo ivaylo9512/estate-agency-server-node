@@ -36,6 +36,27 @@ export default class PropertyService{
         return await this.repo.createProperty(property);
     }
 
+    async createMany(properties, loggedUser) {
+        if(loggedUser.role != 'admin'){
+            throw new UnauthorizedException('Unauthorized.')
+        }
+
+        properties = properties.map(property => {
+            const { name, description, price, size, location, owner } = property;
+
+            return {
+                name,
+                description,
+                price,
+                size,
+                location,
+                owner
+            }
+        })
+
+        return await this.repo.createProperty(properties);
+    }
+
     async update(propertyInput, loggedUser) {
         const property = await this.findById(propertyInput.id);
 
@@ -43,19 +64,15 @@ export default class PropertyService{
             throw new UnauthorizedException('Unauthorized.');
         }
 
-        const { id, name, description, price, location } = propertyInput;
+        const { name, description, price, location, size } = propertyInput;
         
         property.name = name;
         property.description = description;
         property.price = price;
         property.location = location;
+        property.size = size;
 
-        const result = await this.repo.save(property);
-        if(!result){
-            throw new EntitiyNotFoundException(`Property with id ${property.id} is not found`);
-        }
-
-        return propertyInput;
+        return await this.repo.save(property);
     }
 
     async delete(id, loggedUser){

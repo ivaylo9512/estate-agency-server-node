@@ -8,7 +8,7 @@ export default class UserRepository extends Repository{
     }
 
     findByUsername(username){
-        return this.findOne({ username });
+        return this.findOneOrFail({ username });
     }
 
     findUser(user){
@@ -41,7 +41,7 @@ export default class UserRepository extends Repository{
         const users = this.create(userInputs);
         return this.save(users);
     }
-    
+
     deleteByUser(user){
         return this.remove(user);
     }

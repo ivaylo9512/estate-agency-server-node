@@ -1,5 +1,4 @@
 import UnauthorizedException from "../exceptions/unauthorized-exception.js";
-import EntitiyNotFoundException from "../exceptions/enitity-not-found-exception.js";
 import argon2 from 'argon2';
 import { verify } from 'jsonwebtoken';
 
@@ -36,15 +35,7 @@ export default class UserService{
         return user;
     }
 
-    async create(users, loggedUser) {
-        if(loggedUser.role != 'admin'){
-            throw new UnauthorizedException('Unauthorized.');
-        }
-
-        if(!Array.isArray(users)){
-            users = [users];
-        }
-
+    async create(users) {
         await Promise.all(users.map(async user => 
             user.password = await argon2.hash(user.password)));
 

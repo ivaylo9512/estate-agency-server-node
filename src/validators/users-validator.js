@@ -1,6 +1,6 @@
 import { check, validationResult } from 'express-validator';
 
-export const registerValidationRules = () => [
+export const registerValidationRules = [
     check('email', 'Must be a valid email.').isEmail(),
     check('password', 'Password must be between 10 and 22 characters').isLength({min:10, max: 22}),
     check('username', 'Username must be between 8 and 20 characters').isLength({min:8, max: 20}), 
@@ -9,7 +9,7 @@ export const registerValidationRules = () => [
     check('description', 'You must provide a description.').notEmpty()
 ]
 
-export const createValidationRules = () => [
+export const createValidationRules = [
     check('users.*.email', 'Must be a valid email.').isEmail(),
     check('users.*.password', 'Password must be between 10 and 22 characters').isLength({min:10, max: 22}),
     check('users.*.username', 'Username must be between 8 and 20 characters').isLength({min:8, max: 20}), 
@@ -18,8 +18,8 @@ export const createValidationRules = () => [
     check('users.*.description', 'You must provide a description.').notEmpty()
 ]
 
-export const updateValidatorRules = () => [
-    check('id', 'You must provide an id.').notEmpty(),
+export const updateValidationRules = [
+    check('id', 'You must provide an id.').notEmpty().bail().isInt().withMessage('You must provide id as a whole number.'),
     check('email', 'Must be a valid email.').isEmail(),
     check('username', 'Username must be between 8 and 20 characters').isLength({min:8, max: 20}), 
     check('name', 'You must provide a name.').notEmpty(),
@@ -36,6 +36,10 @@ export const registerValidator = async(req, res, next) => {
 }
 
 export const createValidator = async(req, res, next) => {
+    if(req.user.role != 'admin'){
+        return res.status(401).send('Unauthorized.');
+    }
+
     if(checkForArrayInputErrors(req, res) || await validateCreateUsernamesAndEmails(req, res)){
         return;
     }
@@ -45,7 +49,7 @@ export const createValidator = async(req, res, next) => {
 
 export const updateValidator = async(req, res, next) => {
     if(req.body.id != req.user.id && req.user.role != 'admin'){
-        res.status(401).send('Unauthorized.');
+        return res.status(401).send('Unauthorized.');
     }
 
     if(checkForInputErrors(req, res) || !await getUserOrFail(req, res) || await validateUpdateUsernameAndEmail(req, res)){
@@ -96,8 +100,8 @@ const validateCreateUsernamesAndEmails = async(req, res) => {
     const error = await req.body.users.reduce(async(errorObject, user, i) => {
         const {username, email} = user;
         const foundUser = await req.userService.findByUsernameOrEmail(username, email);
-
         const errors = await errorObject;
+        
         if(foundUser){
             errors['user' + i] = {
                 username: 'User with given username or email already exists.'

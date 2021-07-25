@@ -5,7 +5,8 @@ import { UserDto } from "../entities/dtos/user-dto.js";
 import { RefreshToken } from "../entities/refresh-token.js";
 import { getConnection } from 'typeorm'
 import { NODE_ENV } from "../app.js";
-import { registerValidationRules, registerValidator, createValidationRules, createValidator, updateValidatorRules, updateValidator } from '../validators/users-validator.js'
+import { registerValidationRules, registerValidator, createValidationRules, createValidator, updateValidationRules, updateValidator } from '../validators/users-validator.js'
+
 
 const router = Router();
 
@@ -14,7 +15,11 @@ router.get('/findById/:id', async(req, res) => {
     res.send(new UserDto(await req.userService.findById(Number(req.params.id))));
 })
 
-router.patch('/auth/update', updateValidatorRules(), updateValidator, async(req, res) => {
+router.get('/findByUsername/:username', async(req, res) => {
+    res.send(new UserDto(await req.userService.findByUsername(req.params.username)));
+})
+
+router.patch('/auth/update', updateValidationRules, updateValidator, async(req, res) => {
     res.send(new UserDto(await req.userService.update(req.body, req.foundUser)));
 })
 
@@ -31,7 +36,7 @@ router.post('/login', async(req, res) => {
     res.send(new UserDto(user));
 })
 
-router.post('/register', registerValidationRules(), registerValidator, async(req, res) => {
+router.post('/register', registerValidationRules, registerValidator, async(req, res) => {
     const user = await req.userService.register(req.body);
 
     await setTokens(res, user, req);
@@ -39,15 +44,15 @@ router.post('/register', registerValidationRules(), registerValidator, async(req
     res.send(new UserDto(user));
 })
 
-router.post('/auth/create', createValidationRules(), createValidator, async(req, res) => {
+router.post('/auth/create', createValidationRules, createValidator, async(req, res) => {
     const loggedUser = req.user;
-    const users = await req.userService.create(req.body.users, loggedUser);
+    const users = await req.userService.create(req.body.users);
     
     res.send(users.map(user => new UserDto(user)));
 })
 
 router.get('/refreshToken', async(req, res) => {
-    const { signedCookies: { refreshToken } } = req
+    const { signedCookies: { refreshToken } } = req;
     const user = await req.userService.getUserFromToken(refreshToken, refreshSecret);
 
     const token = getToken(user);
