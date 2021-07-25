@@ -1,39 +1,135 @@
 import request from 'supertest';
 import { app } from './sequential.test';
-import { firstToken, secondToken, adminToken } from './user-tests'
+import { firstToken, secondToken, adminToken, updatedFirstUser, updatedSecondUser } from './user-tests'
 
 const propertyTests = () => {
-    const createProperty = {
-        name: 'testProperty',
-        description: 'testProperty',
-        price: 4000000,
-        size: 12000,
-        location: 'testLocation'
-    }
-    const updateProperty = {
-        id: 1,
-        name: 'testPropertyUpdated',
-        description: 'testPropertyUpdated',
-        price: 4500000,
-        size: 15000,
-        location: 'testLocationUpdated'
-    }
+    const [fistProperty, secondProperty, thirdProperty, forthProperty] = Array.from({length: 4}, (v, i) => ({
+        name: 'testProperty' + i,
+        description: 'testProperty' + i,
+        price: 4000000 * i,
+        size: 12000 * i,
+        location: 'testLocation' + i
+    }));
+    
+    const [updatedFirstProperty, updatedSecondProperty] = Array.from({length: 2}, (v, i) => ({
+        id: i + 1,
+        name: 'testPropertyUpdated' + i,
+        description: 'testPropertyUpdated' + i,
+        price: 4500000 * i,
+        size: 15000 * i,
+        location: 'testLocationUpdated' + i
+    }))
 
     it('should create a property', async () => {
+        const res = await request(app)
+            .post('/properties/auth/create')
+            .set('Content-Type', 'Application/json')
+            .set('Authorization', firstToken)
+            .send(fistProperty)
+
+            const {id, owner} = res.body;
+
+            fistProperty.id = id;
+            fistProperty.owner = owner;
+            updatedFirstProperty.owner = owner;
+
+            expect(owner.id).toBe(1);
+            expect(res.body.id).toBe(1);
+            expect(res.body).toEqual(fistProperty);
+    })
+
+    it('should return 422 when creating a property with incorrect inputs', async () => {
+        const error =  {
+            description: 'You must provide a description.', 
+            location: 'You must provide a location.', 
+            name: 'You must provide a name.', 
+            price: 'You must provide a price', 
+            size: 'You must provide a size.'
+        }
 
         const res = await request(app)
             .post('/properties/auth/create')
             .set('Content-Type', 'Application/json')
             .set('Authorization', firstToken)
-            .send(createProperty)
-            .expect(200);
-            
-            createProperty.id = res.body.id;
-            createProperty.owner = res.body.owner;
-            updateProperty.owner = res.body.owner;
+            .send({})
+            .expect(422);
 
-            expect(res.body.id).toBe(1);
-            expect(res.body).toEqual(createProperty);
+            expect(res.body).toEqual(error);
+    })
+
+    
+    it('should return 422 when creating a property with incorrect inputs', async () => {
+        const error =  {
+            description: 'You must provide a description.', 
+            location: 'You must provide a location.', 
+            name: 'You must provide a name.', 
+            price: 'You must provide price as a number.', 
+            size: 'You must provide a size.'
+        }
+
+        const res = await request(app)
+            .post('/properties/auth/create')
+            .set('Content-Type', 'Application/json')
+            .set('Authorization', firstToken)
+            .send({price: 'text'})
+            .expect(422);
+
+            expect(res.body).toEqual(error);
+    })
+
+    it('should create properties when user is admin', async () => {
+        secondProperty.owner = updatedSecondUser;
+        thirdProperty.owner = updatedFirstUser;
+        forthProperty.owner = updatedFirstUser;
+
+        const res = await request(app)
+            .post('/properties/auth/createMany')
+            .set('Content-Type', 'Application/json')
+            .set('Authorization', adminToken)
+            .send({ properties: [secondProperty, thirdProperty, forthProperty] })
+            .expect(200);
+
+            const [{id: secondId, owner}, {id: thirdId}, {id: forthId}] = res.body;
+
+            secondProperty.id = secondId;
+            thirdProperty.id = thirdId;
+            forthProperty.id = forthId;
+
+            expect(secondId).toBe(2);
+            expect(thirdId).toBe(3);
+            expect(forthId).toBe(4);
+            expect(res.body).toEqual([secondProperty, thirdProperty, forthProperty]);
+    })
+
+    it('should return 401 when creating properties with user that is not admin', async () => {
+        const res = await request(app)
+            .post('/properties/auth/createMany')
+            .set('Content-Type', 'Application/json')
+            .set('Authorization', firstToken)
+            .send({ properties: [secondProperty, thirdProperty] })
+            .expect(401);
+
+            expect(res.text).toEqual('Unauthorized.');
+    })
+
+    it('should return 422 when creating properties with incorrect input', async () => {
+        const error = {
+            properties0: {
+                description: 'You must provide a description.', 
+                location: 'You must provide a location.', 
+                name: 'You must provide a name.', 
+                price: 'You must provide a price', 
+                size: 'You must provide a size.'
+            }
+        }
+        const res = await request(app)
+            .post('/properties/auth/createMany')
+            .set('Content-Type', 'Application/json')
+            .set('Authorization', firstToken)
+            .send({ properties: [{}] })
+            .expect(422);
+
+            expect(res.body).toEqual(error);
     })
 
     it('should get a property with id: 1', async () => {
@@ -42,7 +138,17 @@ const propertyTests = () => {
             .get('/properties/findById/1')
             .expect(200);
 
-            expect(res.body).toEqual(createProperty)
+            expect(res.body).toEqual(fistProperty)
+    })
+
+    
+    it('should return 404 when findById with nonexistent id', async () => {
+
+        const res = await request(app)
+            .get('/properties/findById/222')
+            .expect(404);
+
+            expect(res.text).toEqual('Could not find any entity of type "Property" matching: {\n    "id": "222"\n}')
     })
 
     it('should update property', async () => {
@@ -51,10 +157,9 @@ const propertyTests = () => {
             .patch('/properties/auth/update')
             .set('Content-Type', 'Application/json')
             .set('Authorization', firstToken)
-            .send(updateProperty)
-            .expect(200)
+            .send(updatedFirstProperty)
 
-            expect(res.body).toEqual(updateProperty);
+            expect(res.body).toEqual(updatedFirstProperty);
     })
 
     it('should return 401 when deleting property wtihout token', async() => {
