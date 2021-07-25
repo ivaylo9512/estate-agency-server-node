@@ -1,6 +1,7 @@
 import request from 'supertest';
 import { app } from './sequential.test';
-import { getToken } from '../../src/authentication/jwt';
+import { getToken, jwtSecret } from '../../src/authentication/jwt';
+import { verify } from 'jsonwebtoken'
 
 const [firstUser, secondUser, thirdUser, forthUser] = Array.from({length: 4}, (user, i) => ({
     username: 'testUser' + i, 
@@ -410,5 +411,75 @@ const userTests = () => {
             expect(res.body).toEqual(error);
     })
 
+    it('should return user when findByUsername', async() => {
+        const res = await request(app)
+            .get('/users/findByUsername/' + updatedFirstUser.username);
+        expect(200);
+
+        expect(res.body).toEqual(updatedFirstUser)
+    })
+
+    it('should return 404 when findByUsername with nonexistent username', async() => {
+        const res = await request(app)
+            .get('/users/findByUsername/nonExistent');
+        expect(404);
+
+        expect(res.text).toEqual('Could not find any entity of type "User" matching: {\n    "username": "nonExistent"\n}')
+    })
+
+    it('should return 401 when deleting user wtihout token', async() => {
+        const res = await request(app)
+            .delete('/users/auth/delete/1')
+            .expect(401);
+
+            expect(res.text).toBe('No auth token');
+    })
+
+    it('should return 401 when deleting user with incorrect token', async() => {
+        const res = await request(app)
+            .delete('/users/auth/delete/1')
+            .set('Authorization', 'Bearer incorrect token')
+            .expect(401);
+
+            expect(res.text).toBe('jwt malformed');
+    })
+
+    it('should return 401 when updating user wtihout token', async() => {
+        const res = await request(app)
+            .patch('/users/auth/update')
+            .set('Content-Type', 'Application/json')
+            .expect(401);
+
+            expect(res.text).toBe('No auth token');
+    })
+
+    it('should return 401 when updating user with incorrect token', async() => {
+        const res = await request(app)
+            .patch('/users/auth/update')
+            .set('Content-Type', 'Application/json')
+            .set('Authorization', 'Bearer incorrect token')
+            .expect(401);
+
+            expect(res.text).toBe('jwt malformed');
+    })
+
+    it('should return 401 when creating user wtihout token', async() => {
+        const res = await request(app)
+            .post('/users/auth/create')
+            .set('Content-Type', 'Application/json')
+            .expect(401);
+
+            expect(res.text).toBe('No auth token');
+    })
+
+    it('should return 401 when creating user with incorrect token', async() => {
+        const res = await request(app)
+            .post('/users/auth/create')
+            .set('Content-Type', 'Application/json')
+            .set('Authorization', 'Bearer incorrect token')
+            .expect(401);
+
+            expect(res.text).toBe('jwt malformed');
+    })
 } 
 export default userTests;
