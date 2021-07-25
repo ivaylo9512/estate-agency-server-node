@@ -38,7 +38,7 @@ router.post('/auth/createMany', createManyValidationRules, createManyValidator, 
 })
 
 router.delete('/auth/delete/:id', async(req, res) => {
-    const user = await req.userService.findFyId(req.user.id);
+    const user = await req.userService.findById(req.user.id);
     
     res.send(await req.propertyService.delete(req.params.id, user));
 })

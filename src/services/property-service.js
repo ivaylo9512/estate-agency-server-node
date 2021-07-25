@@ -82,6 +82,8 @@ export default class PropertyService{
             throw new UnauthorizedException('Unauthorized.')
         }
 
-        return await this.repo.deleteByProperty(property);
+        await this.repo.deleteByProperty(property);
+
+        return true;
     }
 }

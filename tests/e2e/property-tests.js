@@ -244,9 +244,45 @@ const propertyTests = () => {
             expect(res.body).toEqual(error);
     })
 
+    it('should delete property', async() => {
+        const res = await request(app)
+            .delete('/properties/auth/delete/4')
+            .set('Authorization', firstToken)
+            .expect(200)
+
+            expect(res.body).toBe(true);
+    })
+
+    it('should return 401 when deleting property with owner that has different id and is not role admin', async() => {
+        const res = await request(app)
+            .delete('/properties/auth/delete/3')
+            .set('Authorization', secondToken)
+            .expect(401)
+
+            expect(res.text).toBe('Unauthorized.');
+    })
+
+    it('should delete property when deleting property with owner that has different id and is role admin', async() => {
+        const res = await request(app)
+            .delete('/properties/auth/delete/3')
+            .set('Authorization', adminToken)
+            .expect(200)
+
+            expect(res.body).toBe(true);
+    })
+
+    it('should return 404 when deleting property with nonexistent id', async() => {
+        const res = await request(app)
+            .delete('/properties/auth/delete/4')
+            .set('Authorization', firstToken)
+            .expect(404)
+
+            expect(res.text).toBe('Could not find any entity of type "Property" matching: {\n    "id": "4"\n}');
+    })
+
     it('should return 401 when deleting property wtihout token', async() => {
         const res = await request(app)
-            .delete('/propeprties/auth/delete/1')
+            .delete('/properties/auth/delete/1')
             .expect(401);
 
             expect(res.text).toBe('No auth token');
@@ -254,7 +290,7 @@ const propertyTests = () => {
 
     it('should return 401 when deleting property with incorrect token', async() => {
         const res = await request(app)
-            .delete('/propeprties/auth/delete/1')
+            .delete('/properties/auth/delete/1')
             .set('Authorization', 'Bearer incorrect token')
             .expect(401);
 
@@ -263,7 +299,7 @@ const propertyTests = () => {
 
     it('should return 401 when updating property wtihout token', async() => {
         const res = await request(app)
-            .patch('/propeprties/auth/update')
+            .patch('/properties/auth/update')
             .set('Content-Type', 'Application/json')
             .expect(401);
 
@@ -272,7 +308,7 @@ const propertyTests = () => {
 
     it('should return 401 when updating property with incorrect token', async() => {
         const res = await request(app)
-            .patch('/propeprties/auth/update')
+            .patch('/properties/auth/update')
             .set('Content-Type', 'Application/json')
             .set('Authorization', 'Bearer incorrect token')
             .expect(401);
@@ -282,7 +318,7 @@ const propertyTests = () => {
 
     it('should return 401 when creating property wtihout token', async() => {
         const res = await request(app)
-            .post('/propeprties/auth/create')
+            .post('/properties/auth/create')
             .set('Content-Type', 'Application/json')
             .expect(401);
 
@@ -291,7 +327,7 @@ const propertyTests = () => {
 
     it('should return 401 when creating property with incorrect token', async() => {
         const res = await request(app)
-            .post('/propeprties/auth/create')
+            .post('/properties/auth/create')
             .set('Content-Type', 'Application/json')
             .set('Authorization', 'Bearer incorrect token')
             .expect(401);
