@@ -1,7 +1,6 @@
 import request from 'supertest';
 import { app } from './sequential.test';
 import { getToken, jwtSecret } from '../../src/authentication/jwt';
-import { verify } from 'jsonwebtoken'
 
 const [firstUser, secondUser, thirdUser, forthUser] = Array.from({length: 4}, (user, i) => ({
     username: 'testUser' + i, 
@@ -23,7 +22,7 @@ export const [updatedFirstUser, updatedSecondUser] = Array.from({length: 2}, (us
     role: 'user'
 }))
 export const adminToken = 'Bearer ' + getToken({
-    id: 3, 
+    id: 5, 
     role: 'admin'
 })
 export let firstToken, secondToken;
@@ -92,32 +91,39 @@ const userTests = () => {
     })
 
     it('should create users when logged user is admin', async() => {
+        const adminUser = {
+            ...secondUser, 
+            username: 'adminUser', 
+            email: 'adminUser@gmail.com', 
+            role: 'admin'
+        }
+
         const res = await request(app)
             .post('/users/auth/create')
             .set('Content-Type', 'Application/json')
             .set('Authorization', adminToken)
             .send({
-                users: [secondUser, thirdUser, forthUser]
+                users: [secondUser, thirdUser, forthUser, adminUser]
             })
             expect(200);
 
-            const [{id}, {id: secondId}, {id: thirdId}] = res.body 
+            const [{id: secondId}, {id: thirdId}, {id: forthId}, {id: fifthId, role}] = res.body 
             
-            secondUser.id = id;
-            thirdUser.id = secondId;
-            forthUser.id = thirdId;
+            secondUser.id = secondId;
+            thirdUser.id = thirdId;
+            forthUser.id = forthId;
+            adminUser.id = fifthId;
 
             delete secondUser.password;
             delete thirdUser.password;
             delete forthUser.password;
+            delete adminUser.password;
 
-            expect(id).toBe(2);
-            expect(secondId).toBe(3);
-            expect(thirdId).toBe(4);
-            expect(res.body).toEqual([secondUser, thirdUser, forthUser]);
+            expect([secondId, thirdId, forthId, fifthId]).toEqual([2, 3, 4, 5]);
+            expect(res.body).toEqual([secondUser, thirdUser, forthUser, adminUser]);
     })
 
-    it('should throw UnauthorizedException when creating user with user that is not admin', async() => {
+    it('should return 401 when creating user with user that is not admin', async() => {
         const user = {
             ...firstUser,
             username: 'uniqueUsername', 
@@ -191,7 +197,7 @@ const userTests = () => {
             expect(res.get('Authorization')).toBeDefined();
     })
 
-    it('should throw UnauthorizedException when login user with wrong password', async() => {
+    it('should return 401 when login user with wrong password', async() => {
         const res = await request(app)
             .post('/users/login')
             .set('Content-Type', 'Application/json')
@@ -212,7 +218,7 @@ const userTests = () => {
             expect(res.body).toEqual(firstUser);
     })
 
-    it('should throw EntityNotFound when findById with nonexistent id', async() => {
+    it('should return 404 when findById with nonexistent id', async() => {
         const res = await request(app)
             .get('/users/findById/252')
             .expect(404);
@@ -253,7 +259,7 @@ const userTests = () => {
             expect(res.body).toEqual(updatedSecondUser);
     })
 
-    it('should throw UnauthorizedException when deleting user from another loggedUser that is not admin: role', async() => {
+    it('should return 401 when deleting user from another loggedUser that is not admin: role', async() => {
         const res = await request(app)
             .delete('/users/auth/delete/1')
             .set('Authorization', secondToken)
@@ -377,7 +383,27 @@ const userTests = () => {
             .patch('/users/auth/update')
             .set('Content-Type', 'Application/json')
             .set('Authorization', adminToken)
-            .send({})
+            .send()
+            .expect(422);
+
+            expect(res.body).toEqual(error);
+    })
+
+        it('should return 422 when updating user with invalid input.', async() => {
+        const error = {
+            id: 'You must provide id as a whole number.', 
+            email: 'Must be a valid email.', 
+            username: 'Username must be between 8 and 20 characters', 
+            name: 'You must provide a name.', 
+            location: 'You must provide a location.', 
+            description: 'You must provide a description.'
+        }
+
+        const res = await request(app)
+            .patch('/users/auth/update')
+            .set('Content-Type', 'Application/json')
+            .set('Authorization', adminToken)
+            .send({id: 'invalid'})
             .expect(422);
 
             expect(res.body).toEqual(error);
