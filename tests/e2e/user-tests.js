@@ -55,7 +55,7 @@ const userTests = () => {
             .send(user)
             .expect(422);
 
-        expect(res.body.username).toBe('User with given username or email already exists.');
+        expect(res.body.username).toBe('Username is already in use.');
     })
 
     
@@ -68,7 +68,7 @@ const userTests = () => {
             .send(user)
             .expect(422);
 
-        expect(res.body.username).toBe('User with given username or email already exists.');
+        expect(res.body.email).toBe('Email is already in use.');
     })
 
     it('should retrun 422 when register user with invalid fields', async() => {
@@ -193,7 +193,7 @@ const userTests = () => {
             .get('/users/refreshToken')
             .set('Cookie', `refreshToken=${refreshToken}`)
             .expect(200);
-            
+
         expect(res.get('Authorization')).toBeDefined();
     })
 
@@ -272,7 +272,7 @@ const userTests = () => {
         const res = await request(app)
             .delete('/users/auth/delete/4')
             .set('Authorization', forthToken)
-            .expect(200)
+            .expect(200);
 
         expect(res.body).toBe(true);
     })
@@ -332,8 +332,8 @@ const userTests = () => {
 
     it('should return 422 when creating users with usernames that are already in use.', async() => {
         const error = {
-            user0: { username: 'User with given username or email already exists.'}, 
-            user1: {username: 'User with given username or email already exists.'}
+            user0: {username: 'Username is already in use.'}, 
+            user1: {username: 'Username is already in use.'}
         }
         const firstUser = {...updatedFirstUser, email: 'uniqueEmail1@gmail.com', password: 'testPassword'};
         const secondUser = {...updatedSecondUser, email: 'uniqueEmail1@gmail.com', password: 'testPassword'};
@@ -352,8 +352,8 @@ const userTests = () => {
     
     it('should return 422 when creating users with emails that are already in use.', async() => {
         const error = {
-            user0: { username: 'User with given username or email already exists.'}, 
-            user1: {username: 'User with given username or email already exists.'}
+            user0: {email: 'Email is already in use.'}, 
+            user1: {email: 'Email is already in use.'}
         }
         const firstUser = {...updatedFirstUser, username: 'uniqueUsername', password: 'testPassword'};
         const secondUser = {...updatedSecondUser, username: 'uniqueUsername1', password: 'testPassword'};
@@ -390,7 +390,7 @@ const userTests = () => {
         expect(res.body).toEqual(error);
     })
 
-        it('should return 422 when updating user with invalid input.', async() => {
+    it('should return 422 when updating user with invalid input.', async() => {
         const error = {
             id: 'You must provide id as a whole number.', 
             email: 'Must be a valid email.', 
@@ -412,7 +412,7 @@ const userTests = () => {
 
     it('should return 422 when updating user with username that is in use.', async() => {
         const user = {...updatedFirstUser, username: updatedSecondUser.username}
-        const error = {username: 'Username or email is already in use.'};
+        const error = {username: 'Username is already in use.'};
         
         const res = await request(app)
             .patch('/users/auth/update')
@@ -426,7 +426,7 @@ const userTests = () => {
 
     it('should return 422 when updating user with email that is in use.', async() => {
         const user = {...updatedFirstUser, email: updatedSecondUser.email}
-        const error = {username: 'Username or email is already in use.'};
+        const error = {email: 'Email is already in use.'};
 
         const res = await request(app)
             .patch('/users/auth/update')
@@ -452,6 +452,16 @@ const userTests = () => {
             .expect(404);
 
         expect(res.text).toEqual('Could not find any entity of type "User" matching: {\n    "username": "nonExistent"\n}')
+    })
+
+    
+    it('should logout', async() => {
+        const res = await request(app)
+            .post('/users/logout')
+            .set('Cookie', `refreshToken=${refreshToken}`)
+            .expect(200);
+
+        expect(res).toBe(true);
     })
 
     it('should return 401 when deleting user wtihout token', async() => {

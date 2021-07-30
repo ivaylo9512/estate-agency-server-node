@@ -1,5 +1,5 @@
 import { Repository, EntityRepository } from "typeorm";
-import RefreshToken from "../entities/refresh-token";
+import { RefreshToken } from "../entities/refresh-token";
 
 @EntityRepository(RefreshToken)
 export default class RefreshTokenRepository extends Repository{
@@ -17,14 +17,15 @@ export default class RefreshTokenRepository extends Repository{
 
     createToken(refreshTokenInput){
         const refreshToken = this.create(refreshTokenInput);
-        return this.save(refreshToken);;
+      
+        return this.save(refreshToken);
+    }
+
+    deleteByRefreshToken(token){
+        return this.remove(token);
     }
 
     deleteByToken(token){
-        return this.remove(token);
-    }
-    
-    deleteById(id){
-        return this.delete(id);
+        return this.delete({ token });
     }
 }
