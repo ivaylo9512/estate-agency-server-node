@@ -26,14 +26,15 @@ const propertyTests = () => {
             .set('Content-Type', 'Application/json')
             .set('Authorization', firstToken)
             .send(fistProperty)
+            .expect(200);
 
-            const { id, owner } = res.body;
-            fistProperty.id = id;
-            fistProperty.owner = owner;
-            
-            expect(owner.id).toBe(1);
-            expect(id).toBe(1);
-            expect(res.body).toEqual(fistProperty);
+        const { id, owner } = res.body;
+        fistProperty.id = id;
+        fistProperty.owner = owner;
+        
+        expect(owner.id).toBe(1);
+        expect(id).toBe(1);
+        expect(res.body).toEqual(fistProperty);
     })
 
     it('should return 422 when creating a property with incorrect inputs', async () => {
@@ -52,7 +53,7 @@ const propertyTests = () => {
             .send({})
             .expect(422);
 
-            expect(res.body).toEqual(error);
+        expect(res.body).toEqual(error);
     })
 
     
@@ -72,7 +73,7 @@ const propertyTests = () => {
             .send({price: 'text'})
             .expect(422);
 
-            expect(res.body).toEqual(error);
+        expect(res.body).toEqual(error);
     })
 
     it('should create properties when user is admin', async () => {
@@ -87,16 +88,16 @@ const propertyTests = () => {
             .send({ properties: [secondProperty, thirdProperty, forthProperty] })
             .expect(200);
 
-            const [{id: secondId}, {id: thirdId}, {id: forthId}] = res.body;
+        const [{id: secondId}, {id: thirdId}, {id: forthId}] = res.body;
 
-            secondProperty.id = secondId;
-            thirdProperty.id = thirdId;
-            forthProperty.id = forthId;
+        secondProperty.id = secondId;
+        thirdProperty.id = thirdId;
+        forthProperty.id = forthId;
 
-            expect(secondId).toBe(2);
-            expect(thirdId).toBe(3);
-            expect(forthId).toBe(4);
-            expect(res.body).toEqual([secondProperty, thirdProperty, forthProperty]);
+        expect(secondId).toBe(2);
+        expect(thirdId).toBe(3);
+        expect(forthId).toBe(4);
+        expect(res.body).toEqual([secondProperty, thirdProperty, forthProperty]);
     })
 
     it('should return 401 when creating properties with user that is not admin', async () => {
@@ -107,7 +108,7 @@ const propertyTests = () => {
             .send({ properties: [secondProperty, thirdProperty] })
             .expect(401);
 
-            expect(res.text).toEqual('Unauthorized.');
+        expect(res.text).toEqual('Unauthorized.');
     })
 
     it('should return 422 when creating properties with incorrect input', async () => {
@@ -127,7 +128,7 @@ const propertyTests = () => {
             .send({ properties: [{}] })
             .expect(422);
 
-            expect(res.body).toEqual(error);
+        expect(res.body).toEqual(error);
     })
 
     it('should return 422 when creating properties with incorrect input', async () => {
@@ -147,7 +148,7 @@ const propertyTests = () => {
             .send({ properties: [{price: 'text'}] })
             .expect(422);
 
-            expect(res.body).toEqual(error);
+        expect(res.body).toEqual(error);
     })
 
     it('should get a property with id: 1', async () => {
@@ -155,7 +156,7 @@ const propertyTests = () => {
             .get('/properties/findById/1')
             .expect(200);
 
-            expect(res.body).toEqual(fistProperty)
+        expect(res.body).toEqual(fistProperty)
     })
 
     
@@ -164,7 +165,7 @@ const propertyTests = () => {
             .get('/properties/findById/222')
             .expect(404);
 
-            expect(res.text).toEqual('Could not find any entity of type "Property" matching: {\n    "id": "222"\n}')
+        expect(res.text).toEqual('Could not find any entity of type "Property" matching: {\n    "id": "222"\n}')
     })
 
     it('should update property', async () => {
@@ -175,9 +176,9 @@ const propertyTests = () => {
             .send(updatedFirstProperty)
             .expect(200);
 
-            updatedFirstProperty.owner = res.body.owner;
+        updatedFirstProperty.owner = res.body.owner;
 
-            expect(res.body).toEqual(updatedFirstProperty);
+        expect(res.body).toEqual(updatedFirstProperty);
     })
 
     it('should return 401 when updating property from user with different id that is not admin', async () => {
@@ -188,7 +189,7 @@ const propertyTests = () => {
             .send(updatedFirstProperty)
             .expect(401);
 
-            expect(res.text).toEqual('Unauthorized.');
+        expect(res.text).toEqual('Unauthorized.');
     })
 
     it('should update property when updating from user with different id that is admin', async () => {
@@ -201,7 +202,7 @@ const propertyTests = () => {
 
             updatedSecondProperty.owner = res.body.owner;
 
-            expect(res.body).toEqual(updatedSecondProperty);
+        expect(res.body).toEqual(updatedSecondProperty);
     })
 
     it('should return 422 when updating with invalid inputs', async () => {
@@ -221,7 +222,7 @@ const propertyTests = () => {
             .send({})
             .expect(422);
 
-            expect(res.body).toEqual(error);
+        expect(res.body).toEqual(error);
     })
 
     it('should return 422 when updating with invalid inputs', async () => {
@@ -241,7 +242,7 @@ const propertyTests = () => {
             .send({id: 'text', price: 'text'})
             .expect(422);
 
-            expect(res.body).toEqual(error);
+        expect(res.body).toEqual(error);
     })
 
     it('should delete property', async() => {
@@ -250,7 +251,7 @@ const propertyTests = () => {
             .set('Authorization', firstToken)
             .expect(200)
 
-            expect(res.body).toBe(true);
+        expect(res.body).toBe(true);
     })
 
     it('should return 401 when deleting property with owner that has different id and is not role admin', async() => {
@@ -259,7 +260,7 @@ const propertyTests = () => {
             .set('Authorization', secondToken)
             .expect(401)
 
-            expect(res.text).toBe('Unauthorized.');
+        expect(res.text).toBe('Unauthorized.');
     })
 
     it('should delete property when deleting property with owner that has different id and is role admin', async() => {
@@ -268,7 +269,7 @@ const propertyTests = () => {
             .set('Authorization', adminToken)
             .expect(200)
 
-            expect(res.body).toBe(true);
+        expect(res.body).toBe(true);
     })
 
     it('should return 404 when deleting property with nonexistent id', async() => {
@@ -277,7 +278,7 @@ const propertyTests = () => {
             .set('Authorization', firstToken)
             .expect(404)
 
-            expect(res.text).toBe('Could not find any entity of type "Property" matching: {\n    "id": "4"\n}');
+        expect(res.text).toBe('Could not find any entity of type "Property" matching: {\n    "id": "4"\n}');
     })
 
     it('should return 401 when deleting property wtihout token', async() => {
@@ -285,7 +286,7 @@ const propertyTests = () => {
             .delete('/properties/auth/delete/1')
             .expect(401);
 
-            expect(res.text).toBe('No auth token');
+        expect(res.text).toBe('No auth token');
     })
 
     it('should return 401 when deleting property with incorrect token', async() => {
@@ -294,7 +295,7 @@ const propertyTests = () => {
             .set('Authorization', 'Bearer incorrect token')
             .expect(401);
 
-            expect(res.text).toBe('jwt malformed');
+        expect(res.text).toBe('jwt malformed');
     })
 
     it('should return 401 when updating property wtihout token', async() => {
@@ -303,7 +304,7 @@ const propertyTests = () => {
             .set('Content-Type', 'Application/json')
             .expect(401);
 
-            expect(res.text).toBe('No auth token');
+        expect(res.text).toBe('No auth token');
     })
 
     it('should return 401 when updating property with incorrect token', async() => {
@@ -313,7 +314,7 @@ const propertyTests = () => {
             .set('Authorization', 'Bearer incorrect token')
             .expect(401);
 
-            expect(res.text).toBe('jwt malformed');
+        expect(res.text).toBe('jwt malformed');
     })
 
     it('should return 401 when creating property wtihout token', async() => {
@@ -322,7 +323,7 @@ const propertyTests = () => {
             .set('Content-Type', 'Application/json')
             .expect(401);
 
-            expect(res.text).toBe('No auth token');
+        expect(res.text).toBe('No auth token');
     })
 
     it('should return 401 when creating property with incorrect token', async() => {
@@ -332,7 +333,7 @@ const propertyTests = () => {
             .set('Authorization', 'Bearer incorrect token')
             .expect(401);
 
-            expect(res.text).toBe('jwt malformed');
+        expect(res.text).toBe('jwt malformed');
     })
 };
 export default propertyTests;

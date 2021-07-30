@@ -38,12 +38,12 @@ const userTests = () => {
             .send(firstUser)
             .expect(200);
 
-            firstUser.id = res.body.id;
-            firstToken = 'Bearer ' + res.get('Authorization');
-            delete firstUser.password 
+        firstUser.id = res.body.id;
+        firstToken = 'Bearer ' + res.get('Authorization');
+        delete firstUser.password 
 
-            expect(res.body.id).toBe(1);
-            expect(res.body).toEqual(firstUser);
+        expect(res.body.id).toBe(1);
+        expect(res.body).toEqual(firstUser);
     })
 
     it('should retrun 422 when register user with exsisting username', async() => {
@@ -55,7 +55,7 @@ const userTests = () => {
             .send(user)
             .expect(422);
 
-            expect(res.body.username).toBe('User with given username or email already exists.');
+        expect(res.body.username).toBe('User with given username or email already exists.');
     })
 
     
@@ -68,7 +68,7 @@ const userTests = () => {
             .send(user)
             .expect(422);
 
-            expect(res.body.username).toBe('User with given username or email already exists.');
+        expect(res.body.username).toBe('User with given username or email already exists.');
     })
 
     it('should retrun 422 when register user with invalid fields', async() => {
@@ -87,7 +87,7 @@ const userTests = () => {
             .send({})
             .expect(422);
 
-            expect(res.body).toEqual(errors);
+        expect(res.body).toEqual(errors);
     })
 
     it('should create users when logged user is admin', async() => {
@@ -105,22 +105,22 @@ const userTests = () => {
             .send({
                 users: [secondUser, thirdUser, forthUser, adminUser]
             })
-            expect(200);
+            .expect(200);
 
-            const [{id: secondId}, {id: thirdId}, {id: forthId}, {id: fifthId, role}] = res.body 
-            
-            secondUser.id = secondId;
-            thirdUser.id = thirdId;
-            forthUser.id = forthId;
-            adminUser.id = fifthId;
+        const [{id: secondId}, {id: thirdId}, {id: forthId}, {id: fifthId, role}] = res.body 
+        
+        secondUser.id = secondId;
+        thirdUser.id = thirdId;
+        forthUser.id = forthId;
+        adminUser.id = fifthId;
 
-            delete secondUser.password;
-            delete thirdUser.password;
-            delete forthUser.password;
-            delete adminUser.password;
+        delete secondUser.password;
+        delete thirdUser.password;
+        delete forthUser.password;
+        delete adminUser.password;
 
-            expect([secondId, thirdId, forthId, fifthId]).toEqual([2, 3, 4, 5]);
-            expect(res.body).toEqual([secondUser, thirdUser, forthUser, adminUser]);
+        expect([secondId, thirdId, forthId, fifthId]).toEqual([2, 3, 4, 5]);
+        expect(res.body).toEqual([secondUser, thirdUser, forthUser, adminUser]);
     })
 
     it('should return 401 when creating user with user that is not admin', async() => {
@@ -138,7 +138,7 @@ const userTests = () => {
             .send({ users: [ user ] })
             .expect(401);
 
-            expect(res.text).toBe('Unauthorized.');
+        expect(res.text).toBe('Unauthorized.');
     })
     
     it('should login user with username', async() => {
@@ -151,13 +151,13 @@ const userTests = () => {
             })
             .expect(200);
 
-            const refreshCookie = res.get('set-cookie').find(cookie => cookie.includes('refreshToken'));
-            expect(refreshCookie).toBeDefined();
+        const refreshCookie = res.get('set-cookie').find(cookie => cookie.includes('refreshToken'));
+        expect(refreshCookie).toBeDefined();
 
-            refreshToken = refreshCookie.split(';')[0].split('refreshToken=')[1];
-            secondToken = 'Bearer ' + res.get('Authorization');
-        
-            expect(res.body).toEqual(secondUser);
+        refreshToken = refreshCookie.split(';')[0].split('refreshToken=')[1];
+        secondToken = 'Bearer ' + res.get('Authorization');
+    
+        expect(res.body).toEqual(secondUser);
     })
 
     it('should login user with email', async() => {
@@ -170,8 +170,8 @@ const userTests = () => {
             })
             .expect(200);
 
-            thirdToken = 'Bearer ' + res.get('Authorization');
-            expect(res.body).toEqual(thirdUser);
+        thirdToken = 'Bearer ' + res.get('Authorization');
+        expect(res.body).toEqual(thirdUser);
     })
 
     it('should login user with email', async() => {
@@ -184,17 +184,17 @@ const userTests = () => {
             })
             .expect(200);
 
-            forthToken = 'Bearer ' + res.get('Authorization');
-            expect(res.body).toEqual(forthUser);
+        forthToken = 'Bearer ' + res.get('Authorization');
+        expect(res.body).toEqual(forthUser);
     })
 
     it('should get token', async() => {
         const res = await request(app)
             .get('/users/refreshToken')
             .set('Cookie', `refreshToken=${refreshToken}`)
-            expect(200);
+            .expect(200);
             
-            expect(res.get('Authorization')).toBeDefined();
+        expect(res.get('Authorization')).toBeDefined();
     })
 
     it('should return 401 when login user with wrong password', async() => {
@@ -207,7 +207,7 @@ const userTests = () => {
             })
             .expect(401);
 
-            expect(res.text).toBe('Incorrect username, pasword or email.');
+        expect(res.text).toBe('Incorrect username, pasword or email.');
     })
 
     it('should return firstUser when findById with id 1', async() => {
@@ -215,7 +215,7 @@ const userTests = () => {
             .get('/users/findById/1')
             .expect(200);
 
-            expect(res.body).toEqual(firstUser);
+        expect(res.body).toEqual(firstUser);
     })
 
     it('should return 404 when findById with nonexistent id', async() => {
@@ -223,7 +223,7 @@ const userTests = () => {
             .get('/users/findById/252')
             .expect(404);
 
-            expect(res.text).toBe('Could not find any entity of type "User" matching: {\n    "id": 252\n}');
+        expect(res.text).toBe('Could not find any entity of type "User" matching: {\n    "id": 252\n}');
     })
 
     it('should return 401 when updating user from another loggedUser that is not admin: role', async() => {
@@ -234,7 +234,7 @@ const userTests = () => {
             .send(updatedFirstUser)
             .expect(401);
 
-            expect(res.text).toBe('Unauthorized.');
+        expect(res.text).toBe('Unauthorized.');
     })
 
     it('should update user when updating with same logged user id', async() => {
@@ -245,7 +245,7 @@ const userTests = () => {
             .send(updatedFirstUser)
             .expect(200);
 
-            expect(res.body).toEqual(updatedFirstUser);
+        expect(res.body).toEqual(updatedFirstUser);
     })
 
     it('should update user when updating with logged user with role: admin', async() => {
@@ -256,7 +256,7 @@ const userTests = () => {
             .send(updatedSecondUser)
             .expect(200);
 
-            expect(res.body).toEqual(updatedSecondUser);
+        expect(res.body).toEqual(updatedSecondUser);
     })
 
     it('should return 401 when deleting user from another loggedUser that is not admin: role', async() => {
@@ -265,16 +265,16 @@ const userTests = () => {
             .set('Authorization', secondToken)
             .expect(401);
 
-            expect(res.text).toBe('Unauthorized.');
+        expect(res.text).toBe('Unauthorized.');
     })
 
     it('should delete user when deleting with same logged user id', async() => {
         const res = await request(app)
             .delete('/users/auth/delete/4')
             .set('Authorization', forthToken)
-            expect(200)
+            .expect(200)
 
-            expect(res.body).toBe(true);
+        expect(res.body).toBe(true);
     })
 
     it('should delete user when deleting with logged user with role: admin', async() => {
@@ -283,7 +283,7 @@ const userTests = () => {
             .set('Authorization', adminToken)
             .expect(200);
 
-            expect(res.body).toBe(true);
+        expect(res.body).toBe(true);
     })
 
     it('should return false when deleting nonexistent user', async() => {
@@ -292,7 +292,7 @@ const userTests = () => {
             .set('Authorization', forthToken)
             .expect(200);
 
-            expect(res.body).toBe(false);
+        expect(res.body).toBe(false);
     })
 
     it('should return 404 when updating nonexistent user', async() => {
@@ -303,7 +303,7 @@ const userTests = () => {
             .send(forthUser)
             .expect(404);
 
-            expect(res.text).toBe(`Could not find any entity of type "User" matching: {\n    "id": ${forthUser.id}\n}`);
+        expect(res.text).toBe(`Could not find any entity of type "User" matching: {\n    "id": ${forthUser.id}\n}`);
     })
 
     it('should return 422 when creating users with wrong input', async() => {
@@ -313,7 +313,8 @@ const userTests = () => {
             username: 'Username must be between 8 and 20 characters',
             name: 'You must provide a name.',
             location: 'You must provide a location.',
-            description: 'You must provide a description.'
+            description: 'You must provide a description.',
+            role: 'You must provide a role.'
           }
         }
 
@@ -326,7 +327,7 @@ const userTests = () => {
             })
             .expect(422);
 
-            expect(res.body).toEqual(error);
+        expect(res.body).toEqual(error);
     })
 
     it('should return 422 when creating users with usernames that are already in use.', async() => {
@@ -346,7 +347,7 @@ const userTests = () => {
             })
             .expect(422);
 
-            expect(res.body).toEqual(error)
+        expect(res.body).toEqual(error)
     })
     
     it('should return 422 when creating users with emails that are already in use.', async() => {
@@ -366,7 +367,7 @@ const userTests = () => {
             })
             .expect(422);
             
-            expect(res.body).toEqual(error);
+        expect(res.body).toEqual(error);
     })
 
     it('should return 422 when updating user with invalid input.', async() => {
@@ -386,7 +387,7 @@ const userTests = () => {
             .send()
             .expect(422);
 
-            expect(res.body).toEqual(error);
+        expect(res.body).toEqual(error);
     })
 
         it('should return 422 when updating user with invalid input.', async() => {
@@ -406,7 +407,7 @@ const userTests = () => {
             .send({id: 'invalid'})
             .expect(422);
 
-            expect(res.body).toEqual(error);
+        expect(res.body).toEqual(error);
     })
 
     it('should return 422 when updating user with username that is in use.', async() => {
@@ -420,7 +421,7 @@ const userTests = () => {
             .send(user)
             .expect(422);
 
-            expect(res.body).toEqual(error);
+        expect(res.body).toEqual(error);
     })
 
     it('should return 422 when updating user with email that is in use.', async() => {
@@ -434,21 +435,21 @@ const userTests = () => {
             .send(user)
             .expect(422);
 
-            expect(res.body).toEqual(error);
+        expect(res.body).toEqual(error);
     })
 
     it('should return user when findByUsername', async() => {
         const res = await request(app)
-            .get('/users/findByUsername/' + updatedFirstUser.username);
-        expect(200);
+            .get('/users/findByUsername/' + updatedFirstUser.username)
+            .expect(200);
 
         expect(res.body).toEqual(updatedFirstUser)
     })
 
     it('should return 404 when findByUsername with nonexistent username', async() => {
         const res = await request(app)
-            .get('/users/findByUsername/nonExistent');
-        expect(404);
+            .get('/users/findByUsername/nonExistent')
+            .expect(404);
 
         expect(res.text).toEqual('Could not find any entity of type "User" matching: {\n    "username": "nonExistent"\n}')
     })
@@ -458,7 +459,7 @@ const userTests = () => {
             .delete('/users/auth/delete/1')
             .expect(401);
 
-            expect(res.text).toBe('No auth token');
+        expect(res.text).toBe('No auth token');
     })
 
     it('should return 401 when deleting user with incorrect token', async() => {
@@ -467,7 +468,7 @@ const userTests = () => {
             .set('Authorization', 'Bearer incorrect token')
             .expect(401);
 
-            expect(res.text).toBe('jwt malformed');
+        expect(res.text).toBe('jwt malformed');
     })
 
     it('should return 401 when updating user wtihout token', async() => {
@@ -476,7 +477,7 @@ const userTests = () => {
             .set('Content-Type', 'Application/json')
             .expect(401);
 
-            expect(res.text).toBe('No auth token');
+        expect(res.text).toBe('No auth token');
     })
 
     it('should return 401 when updating user with incorrect token', async() => {
@@ -486,7 +487,7 @@ const userTests = () => {
             .set('Authorization', 'Bearer incorrect token')
             .expect(401);
 
-            expect(res.text).toBe('jwt malformed');
+        expect(res.text).toBe('jwt malformed');
     })
 
     it('should return 401 when creating user wtihout token', async() => {
@@ -495,7 +496,7 @@ const userTests = () => {
             .set('Content-Type', 'Application/json')
             .expect(401);
 
-            expect(res.text).toBe('No auth token');
+        expect(res.text).toBe('No auth token');
     })
 
     it('should return 401 when creating user with incorrect token', async() => {
@@ -505,7 +506,7 @@ const userTests = () => {
             .set('Authorization', 'Bearer incorrect token')
             .expect(401);
 
-            expect(res.text).toBe('jwt malformed');
+        expect(res.text).toBe('jwt malformed');
     })
 } 
 export default userTests;
