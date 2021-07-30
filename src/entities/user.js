@@ -32,8 +32,7 @@ export class User {
     properties;
 
     @OneToMany(() => RefreshToken, refreshToken => refreshToken.owner, {
-        eager: true,
-        onDelete: 'CASCADE' 
+        eager: true
     })
     refreshTokens
 

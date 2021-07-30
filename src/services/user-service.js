@@ -82,4 +82,18 @@ export default class UserService{
         
         return !!result.affected;
     }
+
+    async verifyLoggedUser(id){
+        if(!id){
+            throw new UnauthorizedException('Unauthorized');
+        }
+
+        const user = await this.repo.findOne({ id });
+
+        if(!user){
+            throw new UnauthorizedException('User from token is unavailable.');
+        }
+
+        return user;
+    }
 }

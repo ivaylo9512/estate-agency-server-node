@@ -2,7 +2,7 @@ import { EntityRepository, Repository } from "typeorm";
 import { Property } from "../entities/property.js";
 
 @EntityRepository(Property)
-export class PropertyRepository extends Repository{
+export default class PropertyRepository extends Repository{
     findById(id){
         return this.findOneOrFail({ id })
     }

@@ -20,14 +20,15 @@ const strategy = new Strategy(opts, (payload, done) => {
 passport.use(strategy);
 
 
-export const authMiddleware = (app) => {
+export const authMiddleware = (app, userService) => {
     app.use('**/auth', (req, res, next) => {
-        passport.authenticate(strategy, { session: false }, (error, user, info, status) => {
+        passport.authenticate(strategy, { session: false }, async (error, user, info, status) => {
             if(info){
                 return res.status(401).send(info.message)
             }
-            
-            req.user = user;
+
+            req.user = await userService.verifyLoggedUser(user.id);
+
             return next();
         })(req, res, next)
     })

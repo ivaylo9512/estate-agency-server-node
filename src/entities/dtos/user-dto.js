@@ -1,4 +1,4 @@
-export class UserDto{
+export default class UserDto{
     constructor(user){
         const {id, name, username, location, description, email, role} = user;
 

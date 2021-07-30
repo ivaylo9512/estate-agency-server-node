@@ -1,6 +1,6 @@
-import { UserDto } from "./user-dto.js";
+import UserDto from "./user-dto.js";
 
-export class PropertyDto{
+export default class PropertyDto{
     constructor(property){
         const {id, name, price, size, description, location, owner} = property;
 

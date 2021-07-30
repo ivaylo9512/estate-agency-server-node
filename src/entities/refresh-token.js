@@ -12,7 +12,7 @@ export class RefreshToken{
     @Column('text')
     token
     
-    @ManyToOne(() => User, user => user.refreshTokens)
+    @ManyToOne(() => User, user => user.refreshTokens, {onDelete: 'CASCADE' })
     owner;
 
     @CreateDateColumn()
