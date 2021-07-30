@@ -1,6 +1,5 @@
 import UnauthorizedException from "../exceptions/unauthorized-exception.js";
 import argon2 from 'argon2';
-import { verify } from 'jsonwebtoken';
 
 export default class UserService{
     constructor(repo){
@@ -82,31 +81,5 @@ export default class UserService{
         }
         
         return !!result.affected;
-    }
-
-    async getUserFromToken(token, secret){
-        const payload = verify(token, secret);
-        const user = await this.repo.findById(payload.id)
-        
-        if(!user){
-            throw new UnauthorizedException('Unauthorized.');
-        }
-
-        const foundToken = !user.refreshTokens.find(rt => rt.token == token);
-        if(!foundToken){
-            throw new UnauthorizedException('Unauthorized.');
-        }
-        
-        return user;
-    }
-
-    async addToken(user, token, expiryDays){
-        const date = new Date();
-        date.setDate(date.getDate() + expiryDays);
-
-        token.expiresAt = date;
-        user.refreshTokens = [token];
-
-        return await this.repo.save(user);
     }
 }

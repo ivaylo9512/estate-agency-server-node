@@ -1,6 +1,4 @@
-import RefreshTokenService from "./base/refresh-token-service";
-import RefreshTokenRepositoryImpl from "../repositories/refresh-token-repository-impl";
-import UnauthorizedException from "../expceptions/unauthorized";
+import UnauthorizedException from "../exceptions/unauthorized-exception.js";
 import { refreshExpiry, refreshSecret } from "../authentication/jwt";
 import { verify } from "jsonwebtoken";
 
@@ -21,28 +19,17 @@ export default class RefreshTokenService{
         return refreshToken;
     }
 
-    create(token, owner){
+    async create(token, owner){
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + this.expiryDays);
 
-        return this.repo.create({ token, owner,  expiresAt });
-    }
-
-    async save(token, owner){
-        const expiresAt = new Date();
-        expiresAt.setDate(expiresAt.getDate() + this.expiryDays);
-
-        const refreshToken = await this.repo.save({ token, owner, expiresAt });
-        await this.repo.flush();
-
-        return refreshToken;
+        return await this.repo.createToken({ token, owner, expiresAt });
     }
 
     async delete(token){
         try{
             const id = verify(token, this.secret);
-
-            return !!(await this.repo.deleteById(id)).affected;
+            return !!(await this.repo.deleteByToken(token)).affected;
         }catch(err){
             return false;
         }
@@ -58,9 +45,9 @@ export default class RefreshTokenService{
     }
 
     async getUserFromToken(token){
-        const payload = verify(token, this.secret);
-        
-        const refreshToken = await this.repo.findOne({ token }, ['owner']);
+        verify(token, this.secret);
+
+        const refreshToken = await this.repo.findOne({ token }, { relations: ['owner'] });
         if(!refreshToken){
             throw new UnauthorizedException('Unauthorized.');
         }
