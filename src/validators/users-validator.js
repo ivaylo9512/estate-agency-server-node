@@ -15,7 +15,8 @@ export const createValidationRules = [
     check('users.*.username', 'Username must be between 8 and 20 characters').isLength({min:8, max: 20}), 
     check('users.*.name', 'You must provide a name.').notEmpty(),
     check('users.*.location', 'You must provide a location.').notEmpty(),
-    check('users.*.description', 'You must provide a description.').notEmpty()
+    check('users.*.description', 'You must provide a description.').notEmpty(),
+    check('users.*.role', 'You must provide a role.').notEmpty()
 ]
 
 export const updateValidationRules = [
@@ -99,40 +100,73 @@ const checkForArrayInputErrors = (req, res) => {
 const validateCreateUsernamesAndEmails = async(req, res) => {
     const error = await req.body.users.reduce(async(errorObject, user, i) => {
         const {username, email} = user;
-        const foundUser = await req.userService.findByUsernameOrEmail(username, email);
+        const foundUser = await req.userService.findUsersByUsernameOrEmail(username, email);
         const errors = await errorObject;
         
-        if(foundUser){
-            errors['user' + i] = {
-                username: 'User with given username or email already exists.'
+        return foundUser.reduce((error, user) => {
+            if(username == user.username){
+                errors['user' + i] = {
+                    username: 'Username is already in use.'
+                }
             }
-        }
-        
-        return errors;
+    
+            if(email == user.email){
+                errors['user' + i] = {
+                    email: 'Email is already in use.'
+                }
+            }
+    
+            return error
+        }, errors); 
     }, {})
 
     if(Object.keys(error).length > 0){
         res.status(422).send(error);
-        return errors;
+        return error;
     }
 }
 
 const validateCreateUsernameAndEmail = async(req, res) => {
     const {username, email} = req.body;
-    const user = await req.userService.findByUsernameOrEmail(username, email); 
-    if(user){
-        res.status(422).send({username: 'User with given username or email already exists.'});
-        return user;
+
+    const error = (await req.userService.findUsersByUsernameOrEmail(username, email)).reduce((error, user) => {
+        if(username == user.username){
+            error.username = 'Username is already in use.';
+        }
+
+        if(email == user.email){
+            error.email = 'Email is already in use.';
+
+        }
+        return error
+    }, {}); 
+
+    if(Object.keys(error).length > 0){
+        res.status(422).send(error);
+        return error;
     }
 }
 
 const validateUpdateUsernameAndEmail = async(req, res) => {
     const { id, username, email } = req.body;
-    const users = (await req.userService.findUsersByUsernameOrEmail(username, email)).filter(user => user.id != id);
 
-    if(users.length > 0){
-        res.status(422).send({username: 'Username or email is already in use.' })
-        return user;
+    const error = (await req.userService.findUsersByUsernameOrEmail(username, email)).reduce((error, user) => {
+        if(user.id != id){
+            if(username == user.username){
+                error.username = 'Username is already in use.';
+            }
+
+            if(email == user.email){
+                error.email = 'Email is already in use.';
+
+            }
+        }
+        return error
+    }, {});
+
+    if(Object.keys(error).length > 0){
+        res.status(422).send(error);
+        return error;
     }
 }
 
