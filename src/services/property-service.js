@@ -7,18 +7,18 @@ export default class PropertyService{
     }
 
     async findById(id) {
-        return await this.repo.findById(id);
+        return this.repo.findById(id);
     }
 
     async findByLocation(location) {
-        return await this.repo.findByLocation(location);
+        return this.repo.findByLocation(location);
     }
     async findByPriceRange(from, to) {
-        return await this.repo.findByPriceRange(from, to);
+        return this.repo.findByPriceRange(from, to);
     }
 
     async findByName(name) {
-        return await this.repo.findByName(name);
+        return this.repo.findByName(name);
     }
 
     async create(propertyInput, loggedUser) {
@@ -33,7 +33,7 @@ export default class PropertyService{
             owner: loggedUser
         }
 
-        return await this.repo.createProperty(property);
+        return this.repo.createProperty(property);
     }
 
     async createMany(properties, loggedUser) {
@@ -54,7 +54,7 @@ export default class PropertyService{
             }
         })
 
-        return await this.repo.createProperty(properties);
+        return this.repo.createProperty(properties);
     }
 
     async update(propertyInput, loggedUser) {
@@ -72,7 +72,7 @@ export default class PropertyService{
         property.location = location;
         property.size = size;
 
-        return await this.repo.save(property);
+        return this.repo.save(property);
     }
 
     async delete(id, loggedUser){

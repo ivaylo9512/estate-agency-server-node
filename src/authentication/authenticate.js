@@ -27,8 +27,12 @@ export const authMiddleware = (app, userService) => {
                 return res.status(401).send(info.message)
             }
 
-            req.user = await userService.verifyLoggedUser(user.id);
-
+            try{
+                req.user = await userService.verifyLoggedUser(user.id);
+            }catch(err){
+                return res.status(err.status || 500).send(err.message)
+            }
+            
             return next();
         })(req, res, next)
     })

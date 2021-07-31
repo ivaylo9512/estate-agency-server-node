@@ -7,19 +7,19 @@ export default class UserService{
     }
 
     async findById(id){
-        return await this.repo.findById(id);
+        return this.repo.findById(id);
     }
     
     async findByUsername(username){
-        return await this.repo.findByUsername(username);
+        return this.repo.findByUsername(username);
     }
 
     async findByUsernameOrEmail(username, email){
-        return await this.repo.findUserOrClause({username, email}, ['user'])
+        return this.repo.findUserOrClause({username, email}, ['user'])
     }
 
     async findUsersByUsernameOrEmail(username, email){
-        return await this.repo.findUsersOrClause({username, email}, ['user'])
+        return this.repo.findUsersOrClause({username, email}, ['user'])
     }
 
     async login(userInput) {
@@ -38,7 +38,7 @@ export default class UserService{
         await Promise.all(users.map(async user => 
             user.password = await argon2.hash(user.password)));
 
-        return await this.repo.createUser(users)
+        return this.repo.createUser(users)
     }
 
     async register(userInput){
@@ -55,7 +55,7 @@ export default class UserService{
             email
         }
 
-        return await this.repo.createUser(user);
+        return this.repo.createUser(user);
     }
 
     async update(userInput, foundUser){
@@ -67,7 +67,7 @@ export default class UserService{
         foundUser.description = description;
         foundUser.location = location;
 
-        return await this.repo.save(foundUser);
+        return this.repo.save(foundUser);
     }
 
     async delete(id, loggedUser){
@@ -89,7 +89,6 @@ export default class UserService{
         }
 
         const user = await this.repo.findOne({ id });
-
         if(!user){
             throw new UnauthorizedException('User from token is unavailable.');
         }
