@@ -1,6 +1,6 @@
 import request from 'supertest';
 import { app } from './sequential.test';
-import { getToken, jwtSecret } from '../../src/authentication/jwt';
+import { getToken } from '../../src/authentication/jwt';
 
 const [secondUser, thirdUser, forthUser, fifthUser] = Array.from({length: 4}, (user, i) => ({
     username: 'testUser' + i, 
@@ -281,7 +281,7 @@ const userTests = () => {
     it('should return false when deleting nonexistent user', async() => {
         const res = await request(app)
             .delete('/users/auth/delete/5')
-            .set('Authorization', fifthToken)
+            .set('Authorization', adminToken)
             .expect(200);
 
         expect(res.body).toBe(false);
@@ -291,7 +291,7 @@ const userTests = () => {
         const res = await request(app)
             .patch('/users/auth/update')
             .set('Content-Type', 'Application/json')
-            .set('Authorization', fifthToken)
+            .set('Authorization', adminToken)
             .send(fifthUser)
             .expect(404);
 

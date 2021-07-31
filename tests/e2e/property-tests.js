@@ -1,6 +1,6 @@
 import request from 'supertest';
 import { app } from './sequential.test';
-import { firstToken, secondToken, adminToken, updatedFirstUser, updatedSecondUser } from './user-tests'
+import { secondToken, thirdToken, adminToken, updatedSecondUser, updatedThirdUser } from './user-tests'
 
 const propertyTests = () => {
     const [fistProperty, secondProperty, thirdProperty, forthProperty] = Array.from({length: 4}, (v, i) => ({
@@ -24,7 +24,7 @@ const propertyTests = () => {
         const res = await request(app)
             .post('/properties/auth/create')
             .set('Content-Type', 'Application/json')
-            .set('Authorization', firstToken)
+            .set('Authorization', secondToken)
             .send(fistProperty)
             .expect(200);
 
@@ -32,7 +32,7 @@ const propertyTests = () => {
         fistProperty.id = id;
         fistProperty.owner = owner;
         
-        expect(owner.id).toBe(1);
+        expect(owner.id).toBe(2);
         expect(id).toBe(1);
         expect(res.body).toEqual(fistProperty);
     })
@@ -49,7 +49,7 @@ const propertyTests = () => {
         const res = await request(app)
             .post('/properties/auth/create')
             .set('Content-Type', 'Application/json')
-            .set('Authorization', firstToken)
+            .set('Authorization', secondToken)
             .send({})
             .expect(422);
 
@@ -69,7 +69,7 @@ const propertyTests = () => {
         const res = await request(app)
             .post('/properties/auth/create')
             .set('Content-Type', 'Application/json')
-            .set('Authorization', firstToken)
+            .set('Authorization', secondToken)
             .send({price: 'text'})
             .expect(422);
 
@@ -77,9 +77,9 @@ const propertyTests = () => {
     })
 
     it('should create properties when user is admin', async () => {
-        secondProperty.owner = updatedSecondUser;
-        thirdProperty.owner = updatedFirstUser;
-        forthProperty.owner = updatedFirstUser;
+        secondProperty.owner = updatedThirdUser;
+        thirdProperty.owner = updatedSecondUser;
+        forthProperty.owner = updatedSecondUser;
 
         const res = await request(app)
             .post('/properties/auth/createMany')
@@ -87,7 +87,7 @@ const propertyTests = () => {
             .set('Authorization', adminToken)
             .send({ properties: [secondProperty, thirdProperty, forthProperty] })
             .expect(200);
-
+            
         const [{id: secondId}, {id: thirdId}, {id: forthId}] = res.body;
 
         secondProperty.id = secondId;
@@ -104,7 +104,7 @@ const propertyTests = () => {
         const res = await request(app)
             .post('/properties/auth/createMany')
             .set('Content-Type', 'Application/json')
-            .set('Authorization', firstToken)
+            .set('Authorization', secondToken)
             .send({ properties: [secondProperty, thirdProperty] })
             .expect(401);
 
@@ -124,7 +124,7 @@ const propertyTests = () => {
         const res = await request(app)
             .post('/properties/auth/createMany')
             .set('Content-Type', 'Application/json')
-            .set('Authorization', firstToken)
+            .set('Authorization', secondToken)
             .send({ properties: [{}] })
             .expect(422);
 
@@ -144,7 +144,7 @@ const propertyTests = () => {
         const res = await request(app)
             .post('/properties/auth/createMany')
             .set('Content-Type', 'Application/json')
-            .set('Authorization', firstToken)
+            .set('Authorization', secondToken)
             .send({ properties: [{price: 'text'}] })
             .expect(422);
 
@@ -172,7 +172,7 @@ const propertyTests = () => {
         const res = await request(app)
             .patch('/properties/auth/update')
             .set('Content-Type', 'Application/json')
-            .set('Authorization', firstToken)
+            .set('Authorization', secondToken)
             .send(updatedFirstProperty)
             .expect(200);
 
@@ -185,7 +185,7 @@ const propertyTests = () => {
         const res = await request(app)
             .patch('/properties/auth/update')
             .set('Content-Type', 'Application/json')
-            .set('Authorization', secondToken)
+            .set('Authorization', thirdToken)
             .send(updatedFirstProperty)
             .expect(401);
 
@@ -248,7 +248,7 @@ const propertyTests = () => {
     it('should delete property', async() => {
         const res = await request(app)
             .delete('/properties/auth/delete/4')
-            .set('Authorization', firstToken)
+            .set('Authorization', secondToken)
             .expect(200)
 
         expect(res.body).toBe(true);
@@ -257,7 +257,7 @@ const propertyTests = () => {
     it('should return 401 when deleting property with owner that has different id and is not role admin', async() => {
         const res = await request(app)
             .delete('/properties/auth/delete/3')
-            .set('Authorization', secondToken)
+            .set('Authorization', thirdToken)
             .expect(401)
 
         expect(res.text).toBe('Unauthorized.');
@@ -275,7 +275,7 @@ const propertyTests = () => {
     it('should return 404 when deleting property with nonexistent id', async() => {
         const res = await request(app)
             .delete('/properties/auth/delete/4')
-            .set('Authorization', firstToken)
+            .set('Authorization', secondToken)
             .expect(404)
 
         expect(res.text).toBe('Could not find any entity of type "Property" matching: {\n    "id": "4"\n}');
