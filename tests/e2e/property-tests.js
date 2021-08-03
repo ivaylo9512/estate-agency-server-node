@@ -414,6 +414,20 @@ const propertyTests = () => {
         expect(res.text).toBe('Could not find any entity of type "Property" matching: {\n    "id": "4"\n}');
     })
 
+    it('should return 404 when findById with incorrect id', async() => {
+        const res = await request(app)
+            .get('/properties/findById/incorrect')
+            .set('Authorization', adminToken)
+            .expect(404);
+    })
+
+    it('should return 404 when delete with incorrect id', async() => {
+        const res = await request(app)
+            .get('/auth/properties/delete/incorrect')
+            .set('Authorization', adminToken)
+            .expect(404);
+    })
+
     it('should return 401 when deleting property wtihout token', async() => {
         const res = await request(app)
             .delete('/properties/auth/delete/1')

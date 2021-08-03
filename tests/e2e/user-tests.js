@@ -446,7 +446,6 @@ const userTests = () => {
         expect(res.text).toEqual('Could not find any entity of type "User" matching: {\n    "username": "nonExistent"\n}')
     })
 
-    
     it('should logout', async() => {
         const res = await request(app)
             .post('/users/logout')
@@ -454,6 +453,20 @@ const userTests = () => {
             .expect(200);
 
         expect(res.body).toBe(true);
+    })
+
+    it('should return 404 when findById with incorrect id', async() => {
+        const res = await request(app)
+            .get('/users/findById/incorrect')
+            .set('Authorization', adminToken)
+            .expect(404);
+    })
+
+    it('should return 404 when delete with incorrect id', async() => {
+        const res = await request(app)
+            .get('/auth/users/delete/incorrect')
+            .set('Authorization', adminToken)
+            .expect(404);
     })
 
     it('should return 401 when deleting user wtihout token', async() => {
