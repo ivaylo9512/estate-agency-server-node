@@ -200,6 +200,46 @@ const propertyTests = () => {
         })
     })
 
+    it('should return 0 properties when findByWithPage with nonexistent location', async() => {
+        const res = await request(app)
+            .get('/properties/findByWithPage/12/0/nonexistent/4000000/14500000/ASC')
+            .set('Authorization', adminToken)
+            .expect(200);
+            
+        expect(res.body).toEqual({
+            count: 0, 
+            properties: []
+        })
+    })
+
+    it('should return 404 when direction is incorect', async() => {
+        const res = await request(app)
+            .get('/properties/findByWithPage/12/0/nonexistent/4000000/14500000/incorrect')
+            .set('Authorization', adminToken)
+            .expect(404);
+    })
+
+    it('should return 404 when price range is incorrect', async() => {
+        const res = await request(app)
+            .get('/properties/findByWithPage/12/0/nonexistent/incorrect/incorrect/incorrect')
+            .set('Authorization', adminToken)
+            .expect(404);
+    })
+
+    it('should return 404 when skip is incorect', async() => {
+        const res = await request(app)
+            .get('/properties/findByWithPage/12/incorrect/nonexistent/4000000/14500000/incorrect')
+            .set('Authorization', adminToken)
+            .expect(404);
+    })
+
+    it('should return 404 when take is incorect', async() => {
+        const res = await request(app)
+            .get('/properties/findByWithPage/incorrect/0/nonexistent/4000000/14500000/incorrect')
+            .set('Authorization', adminToken)
+            .expect(404);
+    })
+
     it('should update property', async () => {
         const res = await request(app)
             .patch('/properties/auth/update')
