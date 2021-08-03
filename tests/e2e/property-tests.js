@@ -3,12 +3,12 @@ import { app } from './sequential.test';
 import { secondToken, thirdToken, adminToken, updatedSecondUser, updatedThirdUser } from './user-tests'
 
 const propertyTests = () => {
-    const [fistProperty, secondProperty, thirdProperty, forthProperty] = Array.from({length: 4}, (v, i) => ({
+    const [fistProperty, secondProperty, thirdProperty, forthProperty, ...properties] = Array.from({length: 7}, (v, i) => ({
         name: 'testProperty' + i,
         description: 'testProperty' + i,
-        price: 4000000 * (i + 1),
-        size: 12000 * (i + 1),
-        location: 'testLocation' + i
+        price: `${4000000 * (i + 1)}`,
+        size: `${12000 * (i + 1)}`,
+        location: 'testLocation'
     }));
     
     const [updatedFirstProperty, updatedSecondProperty] = Array.from({length: 2}, (v, i) => ({
@@ -17,7 +17,7 @@ const propertyTests = () => {
         description: 'testPropertyUpdated' + i,
         price: 4500000 * (i + 1),
         size: 15000 * (i + 1), 
-        location: 'testLocationUpdated' + i
+        location: 'testLocationUpdated'
     }))
 
     it('should create a property', async () => {
@@ -78,26 +78,23 @@ const propertyTests = () => {
 
     it('should create properties when user is admin', async () => {
         secondProperty.owner = updatedThirdUser;
-        thirdProperty.owner = updatedSecondUser;
-        forthProperty.owner = updatedSecondUser;
+        const restProperties = [thirdProperty, forthProperty, ...properties].map(property => (property.owner = updatedSecondUser, property));
 
         const res = await request(app)
             .post('/properties/auth/createMany')
             .set('Content-Type', 'Application/json')
             .set('Authorization', adminToken)
-            .send({ properties: [secondProperty, thirdProperty, forthProperty] })
+            .send({ properties: [secondProperty, ...restProperties] })
             .expect(200);
-            
+
         const [{id: secondId}, {id: thirdId}, {id: forthId}] = res.body;
 
-        secondProperty.id = secondId;
-        thirdProperty.id = thirdId;
-        forthProperty.id = forthId;
+        [secondProperty, ...restProperties].map((property, i) => property.id = res.body[i].id);
 
         expect(secondId).toBe(2);
         expect(thirdId).toBe(3);
         expect(forthId).toBe(4);
-        expect(res.body).toEqual([secondProperty, thirdProperty, forthProperty]);
+        expect(res.body).toEqual([secondProperty, ...restProperties]);
     })
 
     it('should return 401 when creating properties with user that is not admin', async () => {
@@ -158,7 +155,6 @@ const propertyTests = () => {
 
         expect(res.body).toEqual(fistProperty)
     })
-
     
     it('should return 404 when findById with nonexistent id', async () => {
         const res = await request(app)
@@ -166,6 +162,42 @@ const propertyTests = () => {
             .expect(404);
 
         expect(res.text).toEqual('Could not find any entity of type "Property" matching: {\n    "id": "222"\n}')
+    })
+
+    it('should return properties when findByWithPage in asc order', async() => {
+        const res = await request(app)
+            .get('/properties/findByWithPage/12/0/testLocation/4000000/14500000/ASC')
+            .set('Authorization', adminToken)
+            .expect(200);
+            
+        expect(res.body).toEqual({
+            count: 3, 
+            properties: [fistProperty, secondProperty, thirdProperty]
+        })
+    })
+
+    it('should return properties when findByWithPage in desc order', async() => {
+        const res = await request(app)
+            .get('/properties/findByWithPage/12/0/testLocation/4000000/14500000/DESC')
+            .set('Authorization', adminToken)
+            .expect(200);
+
+        expect(res.body).toEqual({
+            count: 3, 
+            properties: [fistProperty, secondProperty, thirdProperty]
+        })
+    })
+
+    it('should return 0 properties when findByWithPage with nonexistent price range', async() => {
+        const res = await request(app)
+            .get('/properties/findByWithPage/12/0/testLocation/0/1000/ASC')
+            .set('Authorization', adminToken)
+            .expect(200);
+            
+        expect(res.body).toEqual({
+            count: 0, 
+            properties: []
+        })
     })
 
     it('should update property', async () => {
