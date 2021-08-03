@@ -3,7 +3,7 @@ import { app } from './sequential.test';
 import { secondToken, thirdToken, adminToken, updatedSecondUser, updatedThirdUser } from './user-tests'
 
 const propertyTests = () => {
-    const [fistProperty, secondProperty, thirdProperty, forthProperty, ...properties] = Array.from({length: 7}, (v, i) => ({
+    const [firstProperty, secondProperty, thirdProperty, forthProperty, ...properties] = Array.from({length: 7}, (v, i) => ({
         name: 'testProperty' + i,
         description: 'testProperty' + i,
         price: `${4000000 * (i + 1)}`,
@@ -25,16 +25,16 @@ const propertyTests = () => {
             .post('/properties/auth/create')
             .set('Content-Type', 'Application/json')
             .set('Authorization', secondToken)
-            .send(fistProperty)
+            .send(firstProperty)
             .expect(200);
 
         const { id, owner } = res.body;
-        fistProperty.id = id;
-        fistProperty.owner = owner;
+        firstProperty.id = id;
+        firstProperty.owner = owner;
         
         expect(owner.id).toBe(2);
         expect(id).toBe(1);
-        expect(res.body).toEqual(fistProperty);
+        expect(res.body).toEqual(firstProperty);
     })
 
     it('should return 422 when creating a property with incorrect inputs', async () => {
@@ -153,7 +153,7 @@ const propertyTests = () => {
             .get('/properties/findById/1')
             .expect(200);
 
-        expect(res.body).toEqual(fistProperty)
+        expect(res.body).toEqual(firstProperty)
     })
     
     it('should return 404 when findById with nonexistent id', async () => {
@@ -172,7 +172,7 @@ const propertyTests = () => {
             
         expect(res.body).toEqual({
             count: 3, 
-            properties: [fistProperty, secondProperty, thirdProperty]
+            properties: [firstProperty, secondProperty, thirdProperty]
         })
     })
 
@@ -184,7 +184,7 @@ const propertyTests = () => {
 
         expect(res.body).toEqual({
             count: 3, 
-            properties: [fistProperty, secondProperty, thirdProperty]
+            properties: [firstProperty, secondProperty, thirdProperty]
         })
     })
 
@@ -244,14 +244,16 @@ const propertyTests = () => {
         const res = await request(app)
             .get('/properties/findByPriceRange/4000000/14500000')
             .set('Authorization', adminToken)
-            console.log(res);
-        expect(res.body).toEqual([thirdProperty, secondProperty, fistProperty])
+            .expect(200);
+            
+        expect(res.body).toEqual([thirdProperty, secondProperty, firstProperty])
     })
 
     it('should return empty array when findByPriceRange with nonexistent prices', async() => {
         const res = await request(app)
             .get('/properties/findByPriceRange/0/1000')
             .set('Authorization', adminToken)
+            .expect(200);
 
         expect(res.body).toEqual([])
     })
@@ -261,6 +263,42 @@ const propertyTests = () => {
             .get('/properties/findByPriceRange/incorrect/incorrect')
             .set('Authorization', adminToken)
             .expect(404);
+    })
+
+    it('should return property when findByName', async() => {
+        const res = await request(app)
+            .get('/properties/findByName/testProperty1')
+            .set('Authorization', adminToken)
+            .expect(200);
+
+        expect(res.body).toEqual([secondProperty])
+    })
+
+    it('should return empty array when findByName with nonexistent name', async() => {
+        const res = await request(app)
+            .get('/properties/findByName/nonexistent')
+            .set('Authorization', adminToken)
+            .expect(200);
+
+        expect(res.body).toEqual([])
+    })
+
+    it('should return properties when findByLocation', async() => {
+        const res = await request(app)
+            .get('/properties/findByLocation/testLocation')
+            .set('Authorization', adminToken)
+            .expect(200);
+
+        expect(res.body).toEqual([firstProperty, secondProperty, thirdProperty, forthProperty, ...properties])
+    })
+
+    it('should return empty array when findByLocation with nonexistent location', async() => {
+        const res = await request(app)
+            .get('/properties/findByLocation/nonexistent')
+            .set('Authorization', adminToken)
+            .expect(200);
+
+        expect(res.body).toEqual([])
     })
 
     it('should update property', async () => {
