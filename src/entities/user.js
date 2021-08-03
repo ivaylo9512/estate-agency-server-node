@@ -22,8 +22,12 @@ export class User {
     @Column('text')
     location;
 
-    @Column('text', { default: 'user'})
-    role;
+    @Column({
+        type: "enum",
+        enum: ['admin', 'user'],
+        default: 'user'
+    })
+    role
     
     @Column('text')
     description;

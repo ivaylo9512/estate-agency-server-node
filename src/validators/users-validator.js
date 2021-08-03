@@ -16,7 +16,7 @@ export const createValidationRules = [
     check('users.*.name', 'You must provide a name.').notEmpty(),
     check('users.*.location', 'You must provide a location.').notEmpty(),
     check('users.*.description', 'You must provide a description.').notEmpty(),
-    check('users.*.role', 'You must provide a role.').notEmpty()
+    check('users.*.role', 'You must provide a role.').notEmpty().bail().isIn(['user', 'admin']).withMessage('Role must be user or admin.')
 ]
 
 export const updateValidationRules = [

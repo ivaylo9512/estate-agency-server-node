@@ -7,7 +7,7 @@ import { registerValidationRules, registerValidator, createValidationRules, crea
 const router = Router();
 
 
-router.get('/findById/:id', async(req, res) => {
+router.get('/findById/:id([0-9]+)', async(req, res) => {
     res.send(new UserDto(await req.userService.findById(Number(req.params.id))));
 })
 
@@ -19,7 +19,7 @@ router.patch('/auth/update', updateValidationRules, updateValidator, async(req, 
     res.send(new UserDto(await req.userService.update(req.body, req.foundUser)));
 })
 
-router.delete('/auth/delete/:id', async(req, res) => {
+router.delete('/auth/delete/:id([0-9]+)', async(req, res) => {
     res.send(await req.userService.delete(Number(req.params.id), req.user));
 })
 

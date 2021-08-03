@@ -9,13 +9,13 @@ export class Property{
     @Column('text')
     name;
 
-    @Column('int')
+    @Column('bigint')
     price;
 
     @Column('text')
     description;
     
-    @Column('int')
+    @Column('bigint')
     size;
 
     @Column('text')

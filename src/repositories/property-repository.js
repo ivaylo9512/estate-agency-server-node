@@ -1,4 +1,4 @@
-import { EntityRepository, Repository } from "typeorm";
+import { EntityRepository, Repository, Between, Like } from "typeorm";
 import { Property } from "../entities/property.js";
 
 @EntityRepository(Property)
@@ -8,16 +8,34 @@ export default class PropertyRepository extends Repository{
     }
 
     findByLocation(location){
-        return this.find({ location });
+        return this.find({ 
+            order: {
+                location: 'ASC',
+                id: 'ASC'
+            },
+            where: {
+                location: Like(`%${location}%`)
+            }
+        });
     }
 
     findByName(name){
-        return this.findOne({ name });
+        return this.find({ 
+            order: {
+                name: 'ASC',
+                id: 'ASC'
+            },
+            where: {
+                name: Like(`%${name}%`)
+            }
+        });
     }
 
     findByPriceRange(from, to){
         return this.createQueryBuilder('property')
+            .leftJoinAndSelect('property.owner', 'owner')
             .where(`property.price BETWEEN '${from}' AND '${to}'`)
+            .andWhere('owner.id = property.owner')
             .getMany();
     }
 

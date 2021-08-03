@@ -4,22 +4,22 @@ import { createValidationRules, createManyValidationRules, updateValidationRules
 
 const router = Router();
 
-router.get('/findById/:id', async(req, res) => {
+router.get('/findById/:id([0-9]+)', async(req, res) => {
     res.send(new PropertyDto(await req.propertyService.findById(req.params.id)));
 });
 
 router.get('/findByName/:name', async(req, res) => {
-    res.send(await req.propertyService.findByName(req.params.name)
+    res.send((await req.propertyService.findByName(req.params.name))
         .map(property => new PropertyDto(property)));
 });
 
-router.get('/findByPriceRange/:from/:to', async(req, res) => {
-    res.send(await req.propertyService.findByPriceRange(req.params.from, req.params.to)
+router.get('/findByPriceRange/:from([0-9]+)/:to([0-9]+)', async(req, res) => {
+    res.send((await req.propertyService.findByPriceRange(req.params.from, req.params.to))
         .map(property => new PropertyDto(property)));
 });
 
 router.get('/findByLocation/:location', async(req, res) => {
-    res.send(await req.propertyService.findByLocation(req.params.location)
+    res.send((await req.propertyService.findByLocation(req.params.location))
         .map(property => new PropertyDto(property)));
 });
 
@@ -34,7 +34,7 @@ router.post('/auth/createMany', createManyValidationRules, createManyValidator, 
     res.send(properties);
 })
 
-router.delete('/auth/delete/:id', async(req, res) => {
+router.delete('/auth/delete/:id([0-9]+)', async(req, res) => {
     res.send(await req.propertyService.delete(req.params.id, req.user));
 })
 
