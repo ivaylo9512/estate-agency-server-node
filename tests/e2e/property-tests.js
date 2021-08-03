@@ -240,6 +240,29 @@ const propertyTests = () => {
             .expect(404);
     })
 
+    it('should return properties when findByPriceRange', async() => {
+        const res = await request(app)
+            .get('/properties/findByPriceRange/4000000/14500000')
+            .set('Authorization', adminToken)
+            console.log(res);
+        expect(res.body).toEqual([thirdProperty, secondProperty, fistProperty])
+    })
+
+    it('should return empty array when findByPriceRange with nonexistent prices', async() => {
+        const res = await request(app)
+            .get('/properties/findByPriceRange/0/1000')
+            .set('Authorization', adminToken)
+
+        expect(res.body).toEqual([])
+    })
+
+    it('should return 404 when price is incorect', async() => {
+        const res = await request(app)
+            .get('/properties/findByPriceRange/incorrect/incorrect')
+            .set('Authorization', adminToken)
+            .expect(404);
+    })
+
     it('should update property', async () => {
         const res = await request(app)
             .patch('/properties/auth/update')
