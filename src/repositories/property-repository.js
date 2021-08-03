@@ -31,6 +31,20 @@ export default class PropertyRepository extends Repository{
         });
     }
 
+    findByWithPage(take, skip, location, fromPrice, toPrice, direction){
+        return this.findAndCount(
+            { 
+                where: { 
+                    price: Between(fromPrice, toPrice), 
+                    location: Like(`%${location}%`)
+                },
+                order: { price: direction },
+                take,
+                skip
+            }
+        );
+    }
+
     findByPriceRange(from, to){
         return this.createQueryBuilder('property')
             .leftJoinAndSelect('property.owner', 'owner')

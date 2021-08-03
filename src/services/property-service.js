@@ -21,6 +21,10 @@ export default class PropertyService{
         return this.repo.findByName(name);
     }
 
+    async findByWithPage(take, skip, location, fromPrice, toPrice, direction) {
+        return this.repo.findByWithPage(take, skip, location, fromPrice, toPrice, direction)
+    }
+
     async create(propertyInput, loggedUser) {
         const { name, description, price, size, location } = propertyInput;
 

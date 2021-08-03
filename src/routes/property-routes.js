@@ -27,6 +27,16 @@ router.post('/auth/create', createValidationRules, validator,  async(req, res) =
     res.send(new PropertyDto(await req.propertyService.create(req.body, req.user)));
 })
 
+router.get('/findByWithPage/:take([0-9]+)/:skip([0-9]+)/:location/:fromPrice([0-9]+)/:toPrice([0-9]+)/:direction(?:DESC|ASC)', async(req, res) => {
+    const {take, skip, location, fromPrice, toPrice, direction} = req.params;
+    const [ properties, count ] = await req.propertyService.findByWithPage(take, skip, location, fromPrice, toPrice, direction);
+
+    res.send({
+        count,
+        properties: properties.map(property => new PropertyDto(property))
+    })
+})
+
 router.post('/auth/createMany', createManyValidationRules, createManyValidator,  async(req, res) => {
     const properties = (await req.propertyService.createMany(req.body.properties, req.user))
         .map(property => new PropertyDto(property))
