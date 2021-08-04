@@ -8,6 +8,7 @@ const propertyTests = () => {
         description: 'testProperty' + i,
         price: `${4000000 * (i + 1)}`,
         size: `${12000 * (i + 1)}`,
+        bedrooms: (i + 7) % 6,
         location: 'testLocation'
     }));
     
@@ -17,6 +18,7 @@ const propertyTests = () => {
         description: 'testPropertyUpdated' + i,
         price: 4500000 * (i + 1),
         size: 15000 * (i + 1), 
+        bedrooms: (i + 8) % 6,
         location: 'testLocationUpdated'
     }))
 
@@ -39,6 +41,7 @@ const propertyTests = () => {
 
     it('should return 422 when creating a property with incorrect inputs', async () => {
         const error =  {
+            bedrooms: 'You must provide bedrooms count.',
             description: 'You must provide a description.', 
             location: 'You must provide a location.', 
             name: 'You must provide a name.', 
@@ -59,6 +62,7 @@ const propertyTests = () => {
     
     it('should return 422 when creating a property with incorrect inputs', async () => {
         const error =  {
+            bedrooms: 'You must provide bedrooms as a whole number.',
             description: 'You must provide a description.', 
             location: 'You must provide a location.', 
             name: 'You must provide a name.', 
@@ -70,7 +74,7 @@ const propertyTests = () => {
             .post('/properties/auth/create')
             .set('Content-Type', 'Application/json')
             .set('Authorization', secondToken)
-            .send({price: 'text'})
+            .send({price: 'text', bedrooms: 'dsadsa'})
             .expect(422);
 
         expect(res.body).toEqual(error);
@@ -111,6 +115,7 @@ const propertyTests = () => {
     it('should return 422 when creating properties with incorrect input', async () => {
         const error = {
             properties0: {
+                bedrooms: 'You must provide bedrooms count.',
                 description: 'You must provide a description.', 
                 location: 'You must provide a location.', 
                 name: 'You must provide a name.', 
@@ -131,6 +136,7 @@ const propertyTests = () => {
     it('should return 422 when creating properties with incorrect input', async () => {
         const error = {
             properties0: {
+                bedrooms: 'You must provide bedrooms count.',
                 description: 'You must provide a description.', 
                 location: 'You must provide a location.', 
                 name: 'You must provide a name.', 
@@ -166,7 +172,7 @@ const propertyTests = () => {
 
     it('should return properties when findByWithPage in asc order', async() => {
         const res = await request(app)
-            .get('/properties/findByWithPage/12/0/testLocation/4000000/14500000/ASC')
+            .get('/properties/findByWithPage/3/testLocation/0/4000000/14500000/0/ASC')
             .set('Authorization', adminToken)
             .expect(200);
             
@@ -178,19 +184,31 @@ const propertyTests = () => {
 
     it('should return properties when findByWithPage in desc order', async() => {
         const res = await request(app)
-            .get('/properties/findByWithPage/12/0/testLocation/4000000/14500000/DESC')
+            .get('/properties/findByWithPage/3/testLocation/0/3000000/14500000/1/DESC')
             .set('Authorization', adminToken)
             .expect(200);
 
         expect(res.body).toEqual({
             count: 3, 
-            properties: [firstProperty, secondProperty, thirdProperty]
+            properties: [thirdProperty, secondProperty, firstProperty]
+        })
+    })
+
+    it('should return properties when findByWithPage in asc order and skip id 1', async() => {
+        const res = await request(app)
+            .get('/properties/findByWithPage/3/testLocation/0/4000000/14500000/1/ASC')
+            .set('Authorization', adminToken)
+            .expect(200);
+
+        expect(res.body).toEqual({
+            count: 2, 
+            properties: [secondProperty, thirdProperty]
         })
     })
 
     it('should return 0 properties when findByWithPage with nonexistent price range', async() => {
         const res = await request(app)
-            .get('/properties/findByWithPage/12/0/testLocation/0/1000/ASC')
+            .get('/properties/findByWithPage/12/testLocation/0/0/1000/0/ASC')
             .set('Authorization', adminToken)
             .expect(200);
             
@@ -202,7 +220,7 @@ const propertyTests = () => {
 
     it('should return 0 properties when findByWithPage with nonexistent location', async() => {
         const res = await request(app)
-            .get('/properties/findByWithPage/12/0/nonexistent/4000000/14500000/ASC')
+            .get('/properties/findByWithPage/12/nonexistent/0/4000000/14500000/0/ASC')
             .set('Authorization', adminToken)
             .expect(200);
             
@@ -214,35 +232,44 @@ const propertyTests = () => {
 
     it('should return 404 when direction is incorect', async() => {
         const res = await request(app)
-            .get('/properties/findByWithPage/12/0/nonexistent/4000000/14500000/incorrect')
+            .get('/properties/findByWithPage/12/testLocation/0/4000000/14500000/0/incorrect')
             .set('Authorization', adminToken)
             .expect(404);
     })
 
     it('should return 404 when price range is incorrect', async() => {
         const res = await request(app)
-            .get('/properties/findByWithPage/12/0/nonexistent/incorrect/incorrect/incorrect')
+            .get('/properties/findByWithPage/12/testLocation/0/incorrect/incorrect/0/ASC')
             .set('Authorization', adminToken)
             .expect(404);
     })
 
-    it('should return 404 when skip is incorect', async() => {
+    it('should return 404 when last id is incorect', async() => {
         const res = await request(app)
-            .get('/properties/findByWithPage/12/incorrect/nonexistent/4000000/14500000/incorrect')
+            .get('/properties/findByWithPage/12/testLocation/0/4000000/14500000/incorrect/ASC')
             .set('Authorization', adminToken)
             .expect(404);
     })
 
     it('should return 404 when take is incorect', async() => {
         const res = await request(app)
-            .get('/properties/findByWithPage/incorrect/0/nonexistent/4000000/14500000/incorrect')
+            .get('/properties/findByWithPage/incorrect/testLocation/0/4000000/14500000/-1/ASC')
             .set('Authorization', adminToken)
             .expect(404);
     })
 
     it('should return properties when findByPriceRange', async() => {
         const res = await request(app)
-            .get('/properties/findByPriceRange/4000000/14500000')
+            .get('/properties/findByPriceRange/4000000/14500000/ASC')
+            .set('Authorization', adminToken)
+            .expect(200);
+            
+        expect(res.body).toEqual([firstProperty, secondProperty, thirdProperty])
+    })
+
+    it('should return properties when findByPriceRange', async() => {
+        const res = await request(app)
+            .get('/properties/findByPriceRange/4000000/14500000/DESC')
             .set('Authorization', adminToken)
             .expect(200);
             
@@ -251,7 +278,7 @@ const propertyTests = () => {
 
     it('should return empty array when findByPriceRange with nonexistent prices', async() => {
         const res = await request(app)
-            .get('/properties/findByPriceRange/0/1000')
+            .get('/properties/findByPriceRange/0/1000/ASC')
             .set('Authorization', adminToken)
             .expect(200);
 
@@ -260,7 +287,14 @@ const propertyTests = () => {
 
     it('should return 404 when price is incorect', async() => {
         const res = await request(app)
-            .get('/properties/findByPriceRange/incorrect/incorrect')
+            .get('/properties/findByPriceRange/incorrect/incorrect/ASC')
+            .set('Authorization', adminToken)
+            .expect(404);
+    })
+
+    it('should return 404 when direction is incorect', async() => {
+        const res = await request(app)
+            .get('/properties/findByPriceRange/0/1000/incorrect')
             .set('Authorization', adminToken)
             .expect(404);
     })
@@ -345,7 +379,8 @@ const propertyTests = () => {
             location: 'You must provide a location.', 
             name: 'You must provide a name.', 
             price: 'You must provide a price', 
-            size: 'You must provide a size.'
+            size: 'You must provide a size.',
+            bedrooms: 'You must provide bedrooms count.',
         }
 
         const res = await request(app)
@@ -365,14 +400,15 @@ const propertyTests = () => {
             location: 'You must provide a location.', 
             name: 'You must provide a name.', 
             price: 'You must provide price as a number.', 
-            size: 'You must provide a size.'
+            size: 'You must provide a size.',
+            bedrooms: 'You must provide bedrooms as a whole number.'
         }
 
         const res = await request(app)
             .patch('/properties/auth/update')
             .set('Content-Type', 'Application/json')
             .set('Authorization', adminToken)
-            .send({id: 'text', price: 'text'})
+            .send({id: 'text', price: 'text', bedrooms: 'sda'})
             .expect(422);
 
         expect(res.body).toEqual(error);
