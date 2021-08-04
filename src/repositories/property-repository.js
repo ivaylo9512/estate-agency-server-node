@@ -31,25 +31,28 @@ export default class PropertyRepository extends Repository{
         });
     }
 
-    findByWithPage(take, skip, location, fromPrice, toPrice, direction){
-        return this.findAndCount(
-            { 
-                where: { 
-                    price: Between(fromPrice, toPrice), 
-                    location: Like(`%${location}%`)
-                },
-                order: { price: direction },
-                take,
-                skip
-            }
-        );
+    findByWithPage(take, location, bedrooms, fromPrice, toPrice, lastId, direction){
+        const query = this.createQueryBuilder('property')
+            .leftJoinAndSelect('property.owner', 'owner')
+            .where(`(property.price = '${fromPrice}' AND property.id > '${lastId}' OR property.price > '${fromPrice}' AND property.price < '${toPrice}') AND property.location = '${location}'`)
+            .andWhere('owner.id = property.owner')
+            .orderBy('property.price', direction)
+            .addOrderBy('property.id', 'ASC')
+            .take(take);
+
+        if(bedrooms > 0){
+            query.andWhere(`property.bedrooms = '${bedrooms}'`)
+        }
+
+        return query.getManyAndCount();
     }
 
-    findByPriceRange(from, to){
+    findByPriceRange(from, to, direction){
         return this.createQueryBuilder('property')
             .leftJoinAndSelect('property.owner', 'owner')
             .where(`property.price BETWEEN '${from}' AND '${to}'`)
             .andWhere('owner.id = property.owner')
+            .orderBy('property.price', direction)
             .getMany();
     }
 

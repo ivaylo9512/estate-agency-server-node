@@ -5,7 +5,9 @@ export const createValidationRules = [
     check('price', 'You must provide a price').notEmpty().bail().isNumeric().withMessage('You must provide price as a number.'), 
     check('name', 'You must provide a name.').notEmpty(),
     check('location', 'You must provide a location.').notEmpty(),
-    check('description', 'You must provide a description.').notEmpty()
+    check('description', 'You must provide a description.').notEmpty(),
+    check('bedrooms', 'You must provide bedrooms count.').notEmpty().bail().isNumeric().withMessage('You must provide bedrooms as a whole number.'), 
+
 ]
 
 export const createManyValidationRules = [
@@ -13,7 +15,8 @@ export const createManyValidationRules = [
     check('properties.*.price', 'You must provide a price').notEmpty().bail().isNumeric().withMessage('You must provide price as a number.'), 
     check('properties.*.name', 'You must provide a name.').notEmpty(),
     check('properties.*.location', 'You must provide a location.').notEmpty(),
-    check('properties.*.description', 'You must provide a description.').notEmpty()
+    check('properties.*.description', 'You must provide a description.').notEmpty(),
+    check('properties.*.bedrooms', 'You must provide bedrooms count.').notEmpty().bail().isNumeric().withMessage('You must provide bedrooms as a whole number.'), 
 ]
 
 export const updateValidationRules = [
@@ -22,7 +25,8 @@ export const updateValidationRules = [
     check('price', 'You must provide a price').notEmpty().bail().isNumeric().withMessage('You must provide price as a number.'), 
     check('name', 'You must provide a name.').notEmpty(),
     check('location', 'You must provide a location.').notEmpty(),
-    check('description', 'You must provide a description.').notEmpty()
+    check('description', 'You must provide a description.').notEmpty(),
+    check('bedrooms', 'You must provide bedrooms count.').notEmpty().bail().isNumeric().withMessage('You must provide bedrooms as a whole number.')
 ]
 
 export const validator = (req, res, next) => {

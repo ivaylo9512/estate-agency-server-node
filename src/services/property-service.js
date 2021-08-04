@@ -13,20 +13,20 @@ export default class PropertyService{
     async findByLocation(location) {
         return this.repo.findByLocation(location);
     }
-    async findByPriceRange(from, to) {
-        return this.repo.findByPriceRange(from, to);
+    async findByPriceRange(from, to, direction) {
+        return this.repo.findByPriceRange(from, to, direction);
     }
 
     async findByName(name) {
         return this.repo.findByName(name);
     }
 
-    async findByWithPage(take, skip, location, fromPrice, toPrice, direction) {
-        return this.repo.findByWithPage(take, skip, location, fromPrice, toPrice, direction)
+    async findByWithPage(take, location, bedrooms, fromPrice, toPrice, lastId, direction) {
+        return this.repo.findByWithPage(take, location, bedrooms, fromPrice, toPrice, lastId, direction)
     }
 
     async create(propertyInput, loggedUser) {
-        const { name, description, price, size, location } = propertyInput;
+        const { name, description, price, size, location, bedrooms } = propertyInput;
 
         const property = {
             name,
@@ -34,6 +34,7 @@ export default class PropertyService{
             price,
             size,
             location,
+            bedrooms,
             owner: loggedUser
         }
 
@@ -46,7 +47,7 @@ export default class PropertyService{
         }
 
         properties = properties.map(property => {
-            const { name, description, price, size, location, owner } = property;
+            const { name, description, price, size, location, bedrooms, owner } = property;
 
             return {
                 name,
@@ -54,6 +55,7 @@ export default class PropertyService{
                 price,
                 size,
                 location,
+                bedrooms,
                 owner
             }
         })
@@ -68,13 +70,14 @@ export default class PropertyService{
             throw new UnauthorizedException('Unauthorized.');
         }
 
-        const { name, description, price, location, size } = propertyInput;
+        const { name, description, price, location, size, bedrooms } = propertyInput;
         
         property.name = name;
         property.description = description;
         property.price = price;
         property.location = location;
         property.size = size;
+        property.bedrooms = bedrooms;
 
         return this.repo.save(property);
     }

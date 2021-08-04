@@ -194,6 +194,18 @@ const propertyTests = () => {
         })
     })
 
+    it('should return properties when findByWithPage in asc order with bedrooms > 2', async() => {
+        const res = await request(app)
+            .get('/properties/findByWithPage/3/testLocation/2/4000000/14500000/0/ASC')
+            .set('Authorization', adminToken)
+            .expect(200);
+            
+        expect(res.body).toEqual({
+            count: 1, 
+            properties: [secondProperty]
+        })
+    })
+
     it('should return properties when findByWithPage in asc order and skip id 1', async() => {
         const res = await request(app)
             .get('/properties/findByWithPage/3/testLocation/0/4000000/14500000/1/ASC')
@@ -233,6 +245,13 @@ const propertyTests = () => {
     it('should return 404 when direction is incorect', async() => {
         const res = await request(app)
             .get('/properties/findByWithPage/12/testLocation/0/4000000/14500000/0/incorrect')
+            .set('Authorization', adminToken)
+            .expect(404);
+    })
+
+    it('should return 404 when bedrooms is incorect', async() => {
+        const res = await request(app)
+            .get('/properties/findByWithPage/12/testLocation/incorrect/4000000/14500000/0/ASC')
             .set('Authorization', adminToken)
             .expect(404);
     })

@@ -13,8 +13,9 @@ router.get('/findByName/:name', async(req, res) => {
         .map(property => new PropertyDto(property)));
 });
 
-router.get('/findByPriceRange/:from([0-9]+)/:to([0-9]+)', async(req, res) => {
-    res.send((await req.propertyService.findByPriceRange(req.params.from, req.params.to))
+router.get('/findByPriceRange/:from([0-9]+)/:to([0-9]+)/:direction(DESC|ASC)', async(req, res) => {
+    const { from, to, direction } = req.params;
+    res.send((await req.propertyService.findByPriceRange(from, to, direction))
         .map(property => new PropertyDto(property)));
 });
 
@@ -27,9 +28,10 @@ router.post('/auth/create', createValidationRules, validator,  async(req, res) =
     res.send(new PropertyDto(await req.propertyService.create(req.body, req.user)));
 })
 
-router.get('/findByWithPage/:take([0-9]+)/:skip([0-9]+)/:location/:fromPrice([0-9]+)/:toPrice([0-9]+)/:direction(?:DESC|ASC)', async(req, res) => {
-    const {take, skip, location, fromPrice, toPrice, direction} = req.params;
-    const [ properties, count ] = await req.propertyService.findByWithPage(take, skip, location, fromPrice, toPrice, direction);
+router.get('/findByWithPage/:take([0-9]+)/:location/:bedrooms([0-9]+)/:fromPrice([0-9]+)/:toPrice([0-9]+)/:lastId([0-9]+)/:direction(DESC|ASC)/', async(req, res) => {
+    const { take, location, bedrooms, fromPrice, toPrice, lastId, direction } = req.params;
+
+    const [ properties, count ] = await req.propertyService.findByWithPage(take, location, bedrooms, fromPrice, toPrice, lastId, direction);
 
     res.send({
         count,

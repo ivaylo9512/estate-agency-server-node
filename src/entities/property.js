@@ -18,6 +18,9 @@ export class Property{
     @Column('bigint')
     size;
 
+    @Column('int')
+    bedrooms;
+
     @Column('text')
     location;
 
