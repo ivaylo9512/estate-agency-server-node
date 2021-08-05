@@ -1,9 +1,12 @@
 import EntitiyNotFoundException from "../exceptions/enitity-not-found-exception";
 import UnauthorizedException from "../exceptions/unauthorized-exception.js";
+import FavouritesLimitException from "../exceptions/faborites-limit-exception";
 
 export default class PropertyService{
     constructor(repo){
         this.repo = repo;
+
+        this.favoritesLimit = 5;
     }
 
     async findById(id) {
@@ -27,6 +30,41 @@ export default class PropertyService{
 
     async findUserProperties(take, name, lastId, lastName, direction, loggedUser) {
         return this.repo.findUserProperties(take, name, lastId, lastName, direction, loggedUser.id)
+    }
+
+    async addToFavorites(id, loggedUser){
+        if(loggedUser.role != 'admin'){
+            throw new UnauthorizedException()
+        }
+
+        if(this.favorites.size() > 5){
+            throw new FavouritesLimitException()
+        }
+
+        const property = this.findById(id);
+        property.isFavorite = true;
+
+        await this.repo.save(property);
+        this.favorites.set(id, property);
+
+        return true;
+    }
+
+    async removeFromFavorites(id, loogedUser){
+        if(loggedUser.role != 'admin'){
+            throw new UnauthorizedException()
+        }
+
+        const property = this.favorites.get(id);
+
+        if(!property){
+            return false;
+        }
+
+        property.isFavorite = false;
+        await this.repo.save(property)
+        
+        return this.favorites.delete(id);
     }
 
     async create(propertyInput, loggedUser) {

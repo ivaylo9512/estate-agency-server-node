@@ -66,4 +66,12 @@ router.patch('/auth/update', updateValidationRules, validator, async(req, res) =
     res.send(new PropertyDto(await req.propertyService.update(req.body, req.user)));
 })
 
+router.patch('/auth/addToFavorites/:id([0-9]+)', async(req, res) => {
+    res.send(await req.propertyService.addToFavorites(id, req.user));
+})
+
+router.patch('/auth/removeFromFavorites/:id([0-9]+)', async(req, res) => {
+    res.send(await req.propertyService.removeFromFavorites(id, req.user));
+})
+
 export default router

@@ -24,6 +24,9 @@ export class Property{
     @Column('text')
     location;
 
+    @Column('boolean')
+    isFavorite;
+
     @ManyToOne(() => User, user => user.properties, {
         eager: true
     })
