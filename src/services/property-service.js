@@ -6,6 +6,7 @@ export default class PropertyService{
     constructor(repo){
         this.repo = repo;
 
+        this.findFavorites();
         this.favoritesLimit = 5;
     }
 
@@ -34,14 +35,14 @@ export default class PropertyService{
 
     async addToFavorites(id, loggedUser){
         if(loggedUser.role != 'admin'){
-            throw new UnauthorizedException()
+            throw new UnauthorizedException('Unauthorized.')
         }
 
-        if(this.favorites.size() > 5){
+        if(this.favorites.size == this.favoritesLimit){
             throw new FavouritesLimitException()
         }
 
-        const property = this.findById(id);
+        const property = await this.findById(id);
         property.isFavorite = true;
 
         await this.repo.save(property);
@@ -50,9 +51,9 @@ export default class PropertyService{
         return true;
     }
 
-    async removeFromFavorites(id, loogedUser){
+    async removeFromFavorites(id, loggedUser){
         if(loggedUser.role != 'admin'){
-            throw new UnauthorizedException()
+            throw new UnauthorizedException('Unauthorized.')
         }
 
         const property = this.favorites.get(id);
@@ -134,5 +135,15 @@ export default class PropertyService{
         await this.repo.deleteByProperty(property);
 
         return true;
+    }
+
+    async findFavorites(){
+        this.favorites = (await this.repo.findFavorites()).reduce((map, property) => 
+        (map.set(property.id, property), map), new Map());
+        console.log(this.favorites)
+    }
+
+    getFavorites(){
+        return [...this.favorites.values()];
     }
 }

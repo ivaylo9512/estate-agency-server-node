@@ -9,17 +9,19 @@ const propertyTests = () => {
         price: `${4000000 * (i + 1)}`,
         size: `${12000 * (i + 1)}`,
         bedrooms: (i + 7) % 6,
-        location: 'testLocation'
+        location: 'testLocation',
+        isFavorite: false
     }));
     
     const [updatedFirstProperty, updatedSecondProperty] = Array.from({length: 2}, (v, i) => ({
         id: i + 1,
         name: 'testPropertyUpdated' + i,
         description: 'testPropertyUpdated' + i,
-        price: 4500000 * (i + 1),
-        size: 15000 * (i + 1), 
+        price: `${4500000 * (i + 1)}`,
+        size: `${15000 * (i + 1)}`, 
         bedrooms: (i + 8) % 6,
-        location: 'testLocationUpdated'
+        location: 'testLocationUpdated',
+        isFavorite: false
     }))
 
     it('should create a property', async () => {
@@ -220,7 +222,7 @@ const propertyTests = () => {
 
     it('should return properties when findUserProperties without name', async() => {
         const res = await request(app)
-            .get('/properties/auth/findUserProperties/3/0/null/ASC')
+            .get('/properties/auth/findUserProperties/3/0/undefined/ASC')
             .set('Authorization', secondToken)
             .expect(200);
 
@@ -232,7 +234,7 @@ const propertyTests = () => {
 
     it('should return properties when findUserProperties without name with DESC', async() => {
         const res = await request(app)
-            .get('/properties/auth/findUserProperties/3/0/null/DESC')
+            .get('/properties/auth/findUserProperties/3/0/undefined/DESC')
             .set('Authorization', secondToken)
             .expect(200);
 
@@ -256,7 +258,7 @@ const propertyTests = () => {
 
     it('should return properties when findUserProperties without name and lastId 3', async() => {
         const res = await request(app)
-            .get('/properties/auth/findUserProperties/3/3/null/ASC')
+            .get('/properties/auth/findUserProperties/3/3/undefined/ASC')
             .set('Authorization', secondToken)
             .expect(200);
 
@@ -268,14 +270,14 @@ const propertyTests = () => {
 
     it('should 404 when findUserProperties with incorrect take', async() => {
         const res = await request(app)
-            .get('/properties/auth/findUserProperties/incorrect/3/null/ASC')
+            .get('/properties/auth/findUserProperties/incorrect/3/undefined/ASC')
             .set('Authorization', secondToken)
             .expect(404);
     })
 
     it('should 404 when findUserProperties with incorrect lastId', async() => {
         const res = await request(app)
-            .get('/properties/auth/findUserProperties/3/incorrect/null/ASC')
+            .get('/properties/auth/findUserProperties/3/incorrect/undefined/ASC')
             .set('Authorization', secondToken)
             .expect(404);
     })
@@ -575,7 +577,7 @@ const propertyTests = () => {
             .set('Authorization', adminToken)
             .expect(200);
 
-            updatedFirstProperty.favorites = true;
+            updatedFirstProperty.isFavorite = true;
 
             expect(res.body).toBe(true);
     })
@@ -583,19 +585,19 @@ const propertyTests = () => {
     it('should return 401 when addToFavorites with user that is not admin', async() => {
         const res = await request(app)
             .patch('/properties/auth/addToFavorites/1')
-            .set('Authorization', adminToken)
+            .set('Authorization', secondToken)
             .expect(401);
 
-            expect(res.body).toBe('Unauthorized');
+            expect(res.text).toBe('Unauthorized.');
     })
 
     it('should return 404 when addFromFavorites with nonexistent property id ', async() => {
         const res = await request(app)
             .patch('/properties/auth/addToFavorites/222')
             .set('Authorization', adminToken)
-            .expect(401);
+            .expect(404);
 
-        expect(res.body).toBe('Entity not found.')
+        expect(res.text).toBe('Could not find any entity of type "Property" matching: {\n    "id": "222"\n}')
     })
 
     it('should return true when addToFavorites', async() => {
@@ -604,7 +606,7 @@ const propertyTests = () => {
             .set('Authorization', adminToken)
             .expect(200);
 
-            updatedSecondProperty.favorites = true;
+            updatedSecondProperty.isFavorite = true;
 
             expect(res.body).toBe(true);
     })
@@ -613,8 +615,8 @@ const propertyTests = () => {
         const res = await request(app)
             .get('/properties/getFavorites')
             .expect(200);
-
-            expect(res.body).toBe([updatedFirstProperty, updatedSecondProperty]);
+            
+            expect(res.body).toEqual([updatedFirstProperty, updatedSecondProperty]);
     })
 
     it('should return true when removeFromFavorites', async() => {
@@ -631,7 +633,7 @@ const propertyTests = () => {
             .get('/properties/getFavorites')
             .expect(200);
 
-            expect(res.body).toBe([updatedFirstProperty]);
+            expect(res.body).toEqual([updatedFirstProperty]);
     })
 
     it('should return false when removeFromFavorites with id that is not in favorites', async() => {
@@ -649,7 +651,7 @@ const propertyTests = () => {
             .set('Authorization', secondToken)
             .expect(401);
 
-        expect(res.body).toBe('Unauthorized.')
+        expect(res.text).toBe('Unauthorized.')
     })
 
     it('should return 404 when addToFavorites with incorrect id', async() => {
@@ -732,6 +734,7 @@ const propertyTests = () => {
     it('should return 401 when addToFavorites with incorrect token', async() => {
         const res = await request(app)
             .patch('/properties/auth/addToFavorites/2')
+            .set('Authorization', 'Bearer incorrect token')
             .expect(401);
 
         expect(res.text).toBe('jwt malformed');
@@ -748,6 +751,7 @@ const propertyTests = () => {
     it('should return 401 when removeFromFavorites with incorrect token', async() => {
         const res = await request(app)
             .patch('/properties/auth/removeFromFavorites/2')
+            .set('Authorization', 'Bearer incorrect token')
             .expect(401);
 
         expect(res.text).toBe('jwt malformed');
@@ -764,6 +768,7 @@ const propertyTests = () => {
     it('should return 401 when findUserProperties with incorrect token', async() => {
         const res = await request(app)
             .get('/properties/auth/findUserProperties/3/0/null/ASC/testProperty0')
+            .set('Authorization', 'Bearer incorrect token')
             .expect(401);
 
         expect(res.text).toBe('jwt malformed');

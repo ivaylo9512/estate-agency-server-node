@@ -31,6 +31,10 @@ export default class PropertyRepository extends Repository{
         });
     }
 
+    findFavorites(){
+        return this.find({ isFavorite: true });
+    }
+
     findByWithPage(take, location, bedrooms, fromPrice, toPrice, lastId, direction){
         const query = this.createQueryBuilder('property')
             .leftJoinAndSelect('property.owner', 'owner')
