@@ -720,5 +720,53 @@ const propertyTests = () => {
 
         expect(res.text).toBe('jwt malformed');
     })
+
+    it('should return 401 when addToFavorites wtihout token', async() => {
+        const res = await request(app)
+            .patch('/properties/auth/addToFavorites/2')
+            .expect(401);
+
+        expect(res.text).toBe('No auth token');
+    })
+
+    it('should return 401 when addToFavorites with incorrect token', async() => {
+        const res = await request(app)
+            .patch('/properties/auth/addToFavorites/2')
+            .expect(401);
+
+        expect(res.text).toBe('jwt malformed');
+    })
+
+    it('should return 401 when removeFromFavorites wtihout token', async() => {
+        const res = await request(app)
+            .patch('/properties/auth/removeFromFavorites/2')
+            .expect(401);
+
+        expect(res.text).toBe('No auth token');
+    })
+
+    it('should return 401 when removeFromFavorites with incorrect token', async() => {
+        const res = await request(app)
+            .patch('/properties/auth/removeFromFavorites/2')
+            .expect(401);
+
+        expect(res.text).toBe('jwt malformed');
+    })
+
+    it('should return 401 when findUserProperties wtihout token', async() => {
+        const res = await request(app)
+            .get('/properties/auth/findUserProperties/3/0/null/ASC/testProperty0')
+            .expect(401);
+
+        expect(res.text).toBe('No auth token');
+    })
+
+    it('should return 401 when findUserProperties with incorrect token', async() => {
+        const res = await request(app)
+            .get('/properties/auth/findUserProperties/3/0/null/ASC/testProperty0')
+            .expect(401);
+
+        expect(res.text).toBe('jwt malformed');
+    })
 };
 export default propertyTests;
