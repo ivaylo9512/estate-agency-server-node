@@ -3,7 +3,6 @@ import { getToken, getRefreshToken, COOKIE_OPTIONS, refreshExpiry } from '../aut
 import UserDto from "../entities/dtos/user-dto.js";
 import { registerValidationRules, registerValidator, createValidationRules, createValidator, updateValidationRules, updateValidator } from '../validators/users-validator.js'
 
-
 const router = Router();
 
 

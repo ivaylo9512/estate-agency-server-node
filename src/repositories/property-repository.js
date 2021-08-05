@@ -47,6 +47,27 @@ export default class PropertyRepository extends Repository{
         return query.getManyAndCount();
     }
 
+    findUserProperties(take, name, lastId, lastName, direction, userId){
+        const query = this.createQueryBuilder('property')
+            .leftJoinAndSelect('property.owner', 'owner')
+            .where(`property.owner = ${userId}`)
+            .orderBy('property.name', direction)
+            .addOrderBy('property.id', 'ASC')
+            .take(take);
+
+        if(name){
+            query.andWhere(`property.name = '${name}' AND property.id > '${lastId}'`)
+        }else if(lastName != 'undefined'){
+            query.andWhere(`(property.name = '${lastName}' AND property.id > '${lastId}') OR property.name ${direction == 'ASC' ? '>' : '<' } '${lastName}'`)
+        }else{
+            query.andWhere(`property.id > '${lastId}'`)
+
+        }
+
+        query.andWhere(`property.owner = ${userId} AND owner.id = property.owner`)
+        return query.getManyAndCount();
+    }
+
     findByPriceRange(from, to, direction){
         return this.createQueryBuilder('property')
             .leftJoinAndSelect('property.owner', 'owner')
