@@ -236,7 +236,7 @@ const propertyTests = () => {
             .set('Authorization', secondToken)
             .expect(200);
 
-                expect(res.body).toEqual({
+            expect(res.body).toEqual({
                 count: 6, 
                 properties: [properties[2], properties[1], properties[0]]
             })
@@ -567,6 +567,64 @@ const propertyTests = () => {
             .get('/auth/properties/delete/incorrect')
             .set('Authorization', adminToken)
             .expect(404);
+    })
+
+    it('should return true when addToFavorites', async() => {
+        const res = await request(app)
+            .patch('/properties/auth/addToFavorites/1')
+            .set('Authorization', adminToken)
+            .expect(200);
+
+            updatedFirstProperty.favorites = true;
+
+            expect(res.body).toBe(true);
+    })
+
+    it('should return 401 when addToFavorites', async() => {
+        const res = await request(app)
+            .patch('/properties/auth/addToFavorites/1')
+            .set('Authorization', adminToken)
+            .expect(200);
+
+            updatedFirstProperty.favorites = true;
+
+            expect(res.body).toBe(true);
+    })
+
+    it('should return true when removeFromFavorites', async() => {
+        const res = await request(app)
+            .patch('/properties/auth/removeFromFavorites/1')
+            .set('Authorization', adminToken)
+            .expect(200);
+
+        expect(res.body).toBe(true);
+    })
+
+    it('should return false when removeFromFavorites with id that is not in favorites', async() => {
+        const res = await request(app)
+            .patch('/properties/auth/removeFromFavorites/2')
+            .set('Authorization', adminToken)
+            .expect(200);
+
+        expect(res.body).toBe(false);
+    })
+
+    it('should return 404 when addFromFavorites with nonexistent property id ', async() => {
+        const res = await request(app)
+            .patch('/properties/auth/addToFavorites/222')
+            .set('Authorization', secondToken)
+            .expect(404);
+
+        expect(res.body).toBe('Entity not found.')
+    })
+
+    it('should return 404 when removeFromFavorites user that is not admin', async() => {
+        const res = await request(app)
+            .patch('/properties/auth/removeFromFavorites/2')
+            .set('Authorization', secondToken)
+            .expect(404);
+
+        expect(res.body).toBe('Unauthorized.')
     })
 
     it('should return 401 when deleting property wtihout token', async() => {
