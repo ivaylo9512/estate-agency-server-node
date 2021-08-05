@@ -194,6 +194,92 @@ const propertyTests = () => {
         })
     })
 
+    it('should return firstProperty when findUserProperties with name and last id 0', async() => {
+        const res = await request(app)
+            .get('/properties/auth/findUserProperties/3/0/null/ASC/testProperty0')
+            .set('Authorization', secondToken)
+            .expect(200);
+
+            expect(res.body).toEqual({
+                count: 1, 
+                properties: [firstProperty]
+            })
+    })
+
+    it('should return empty array when findUserProperties with name and last id 1', async() => {
+        const res = await request(app)
+            .get('/properties/auth/findUserProperties/3/1/null/ASC/testProperty0')
+            .set('Authorization', secondToken)
+            .expect(200);
+
+            expect(res.body).toEqual({
+                count: 0, 
+                properties:[]
+            })
+    })
+
+    it('should return properties when findUserProperties without name', async() => {
+        const res = await request(app)
+            .get('/properties/auth/findUserProperties/3/0/null/ASC')
+            .set('Authorization', secondToken)
+            .expect(200);
+
+            expect(res.body).toEqual({
+                count: 6, 
+                properties: [firstProperty, thirdProperty, forthProperty]
+            })
+    })
+
+    it('should return properties when findUserProperties without name with DESC', async() => {
+        const res = await request(app)
+            .get('/properties/auth/findUserProperties/3/0/null/DESC')
+            .set('Authorization', secondToken)
+            .expect(200);
+
+                expect(res.body).toEqual({
+                count: 6, 
+                properties: [properties[2], properties[1], properties[0]]
+            })
+    })
+
+    it('should return properties when findUserProperties with lastName with DESC', async() => {
+        const res = await request(app)
+            .get('/properties/auth/findUserProperties/3/0/testProperty4/DESC')
+            .set('Authorization', secondToken)
+            .expect(200);
+
+            expect(res.body).toEqual({
+                count: 4, 
+                properties: [properties[0], forthProperty, thirdProperty]
+            })
+    })
+
+    it('should return properties when findUserProperties without name and lastId 3', async() => {
+        const res = await request(app)
+            .get('/properties/auth/findUserProperties/3/3/null/ASC')
+            .set('Authorization', secondToken)
+            .expect(200);
+
+            expect(res.body).toEqual({
+                count: 4, 
+                properties: [forthProperty, properties[0], properties[1]]
+            })
+    })
+
+    it('should 404 when findUserProperties with incorrect take', async() => {
+        const res = await request(app)
+            .get('/properties/auth/findUserProperties/incorrect/3/null/ASC')
+            .set('Authorization', secondToken)
+            .expect(404);
+    })
+
+    it('should 404 when findUserProperties with incorrect lastId', async() => {
+        const res = await request(app)
+            .get('/properties/auth/findUserProperties/3/incorrect/null/ASC')
+            .set('Authorization', secondToken)
+            .expect(404);
+    })
+
     it('should return properties when findByWithPage in asc order with bedrooms > 2', async() => {
         const res = await request(app)
             .get('/properties/findByWithPage/3/testLocation/2/4000000/14500000/0/ASC')
