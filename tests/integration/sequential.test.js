@@ -2,7 +2,6 @@ import { initialize } from 'app'
 import userTests from './user-tests.js'
 import propertyTests from './property-tests.js'
 import { getConnection } from 'typeorm';
-import { User } from '../../src/entities/user.js';
 import UserRepository from '../../dist/repositories/user-repository.js';
 
 export let app;

@@ -31,7 +31,6 @@ router.post('/auth/create', createValidationRules, validator,  async(req, res) =
 router.get('/auth/findUserProperties/:take([0-9]+)/:lastId([0-9]+)/:lastName?/:direction(DESC|ASC)/:name?', async(req, res) => {
     const { take, name, lastId, lastName, direction } = req.params;
 
-    console.log('here')
     const [ properties, count ] = await req.propertyService.findUserProperties(take, name, lastId, lastName, direction, req.user)
 
     res.send({
@@ -70,11 +69,11 @@ router.get('/getFavorites', async(req, res) => {
     res.send(req.propertyService.getFavorites().map(property => new PropertyDto(property)));
 })
 
-router.patch('/auth/addToFavorites/:id([0-9]+)', async(req, res) => {
+router.patch('/auth/addFavorite/:id([0-9]+)', async(req, res) => {
     res.send(await req.propertyService.addToFavorites(req.params.id, req.user));
 })
 
-router.patch('/auth/removeFromFavorites/:id([0-9]+)', async(req, res) => {
+router.patch('/auth/removeFavorite/:id([0-9]+)', async(req, res) => {
     res.send(await req.propertyService.removeFromFavorites(req.params.id, req.user));
 })
 

@@ -1,6 +1,5 @@
-import EntitiyNotFoundException from "../exceptions/enitity-not-found-exception";
 import UnauthorizedException from "../exceptions/unauthorized-exception.js";
-import FavouritesLimitException from "../exceptions/faborites-limit-exception";
+import FavouritesLimitException from "../exceptions/favorites-limit-exception";
 
 export default class PropertyService{
     constructor(repo){
@@ -139,8 +138,7 @@ export default class PropertyService{
 
     async findFavorites(){
         this.favorites = (await this.repo.findFavorites()).reduce((map, property) => 
-        (map.set(property.id, property), map), new Map());
-        console.log(this.favorites)
+            (map.set(property.id, property), map), new Map());
     }
 
     getFavorites(){
